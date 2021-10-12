@@ -1,84 +1,90 @@
 [
   {
-    "_id": "1",
+    "_id": "f1",
     "type": "photographer",
-    "specialized": ["photoshoot", "VDO-grapher"],  
+    "specialized": ["photographer", "videographer"],  
     "rate": "S$25 hourly",
+    "owner": {
+      "_id": "l1",
+      "userName": "email_1"
+    },
     "name": "Walle",
-    "profile-image": true,
-    "social-media": [
-      {
-        "facebook": "facebook.com/walle",
-        "instagram": "instagram.com/walle",
-        "tiktok": "tiktok.com/walle"
-      } 
-    ],
+    "profileImage": "https://images.unsplash.com/photo-1620000617482-821324eb9a14",
+    "socialMedia": {
+      "facebook": "facebook.com/walle",
+      "instagram": "instagram.com/walle",
+      "tiktok": "tiktok.com/walle"
+    },
     "contact": {
       "mobile": "9156584",
       "email": "walle@gmail.com",
       "web": "walle@image.com"
     },
+    "showCase": "https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg",
     "portfolio": ["image1.jpg", "image2.jpg"],
-    "rating": 5,
     "review": {
-      "total": 8,
-      "date": "2021/09/09",
+      "_id": "r1",
+      "rating": 5,
+      "date": "2021/03/15",
       "detail": "Walle is fantastic person and he help guide us how to post on the photo. He know many nice spot for stunning photho at free of cost!",
-      "from": ["Lisa"]
+      "from": "Lisa"
     }
   },
   {
-    "_id": "2",
+    "_id": "f2",
     "type": "makeup-artist",
     "specialized": ["wedding", "fancy"],  
     "rate": "S$45 /session",
+    "owner": {},
     "name": "Linda",
-    "profile-image": true,
-    "social-media": [
-      {
+    "profileImage": "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    "socialMedia": {
         "facebook": "facebook.com/linda",
         "instagram": "instagram.com/linda"
-      } 
-    ],
+    },
     "contact": {
       "mobile": "815852",
       "email": "linda@gmail.com",
       "web": "linda@makeup.com"
     },
+    "showCase": "https://images.pexels.com/photos/157757/wedding-dresses-fashion-character-bride-157757.jpeg",
     "portfolio": ["linda-image1.jpg", "linda-image2.jpg"],
-    "rating": 4,
     "review": {
-      "total": 10,
-      "date": "2021/02/09",
-      "detail": "Linda makeup work is acceptional. Worth the fee if you have tight budget",
-      "from": ["Moana"]
+      "_id": "r3",
+      "rating": 3,
+      "date": "2021/08/15",
+      "detail": "neutral. worth the price if you are on tight budget",
+      "from": "Lisa"
     }
   },
   {
-    "_id": "3",
-    "type": "VDOgrapher",
+    "_id": "f3",
+    "type": "videographer",
     "specialized": ["VDO-motion"],  
     "rate": "S$40 hourly",
+    "owner": {
+      "_id": "l2",
+      "userName": "email_2"
+    },
     "name": "Mark",
-    "profile-image": true,
-    "social-media": [
-      {
+    "profileImage": "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79",
+    "socialMedia": {
         "facebook": "facebook.com/mark",
         "instagram": "instagram.com/mark"
-      } 
-    ],
+    },
     "contact": {
       "mobile": "56665555",
       "email": "mark@gmail.com",
       "web": "mark@motion.com"
     },
+    "showCase": "https://images.pexels.com/photos/1244700/pexels-photo-1244700.jpeg",
     "portfolio": ["mark-image1.jpg", "mark-image2.jpg"],
-    "rating": 1,
     "review": {
-      "total": 7,
-      "date": "2021/05/09",
-      "detail": "considering the hourly rate and the profressional services provided, I would not recomment to anyone",
-      "from": ["annoymnous"]
+      "_id": "r2",
+      "rating": 1,
+      "date": "2021/02/15",
+      "detail": "unaceptable job, terrible VDO and bad attitude",
+      "from": "Yoshi"
     }
   }
 ]

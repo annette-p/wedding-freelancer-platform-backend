@@ -1,9 +1,17 @@
-{
-  "_id": "",
-  "anonymous": false,
-  "login": {
-    "userName": "",
-    "password": "",
-    "federated": ["facebook", "instagram", "tiktok", "gmail"]
+[
+  {
+    "_id": "l1",
+    "userName": "email_1",
+    "password": "password1"
+  },
+  {
+    "_id": "l2",
+    "userName": "email_2",
+    "password": "password2"
+  },
+  {
+    "_id": "l3",
+    "userName": "email_3",
+    "password": "password3"
   }
-}
+]
