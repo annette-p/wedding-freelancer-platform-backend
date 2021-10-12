@@ -83,7 +83,7 @@ async function update(freelancerId, updatedFreelancerInfo) {
 async function remove(freelancerId) {
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
-        let result = await db.collection(collectionName).remove({
+        let result = await db.collection(collectionName).deleteOne({
             '_id': ObjectId(freelancerId)
         });
         return result

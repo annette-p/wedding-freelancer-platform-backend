@@ -16,6 +16,8 @@ async function main() {
     app.get('/freelancers', async (req, res) => {
 
         try {
+
+            // NOT IMPLEMENTED YET - FUTURE SEARCH 
             // start with an empty critera object
             let criteria = {};
 
@@ -35,6 +37,8 @@ async function main() {
                     '$in': [req.query.specialized]
                 }
             }
+
+            // END OF NOT IMPLEMENTED
 
             let result = await Freelancers.get(criteria);
 
@@ -85,10 +89,10 @@ async function main() {
         }
     })
 
+    // edit & update freelancer
     app.put('/freelancer/:id', async(req,res)=>{
         try {
-            // req.body is an object that contains the
-            // data sent to the express endpoint
+            // req.body is an object that contains the data sent to the express endpoint
             let updatedFreelancerData = req.body.data;
 
             let result = await Freelancers.update(req.params.id, updatedFreelancerData)
@@ -117,6 +121,15 @@ async function main() {
             console.error(e);
         }
     })
+
+    // get all reviews for a freelancer
+    app.get('/freelancer/:id/reviews', async (req, res) => {})
+
+    // get a review for a freelancer
+    app.get('/freelancer/:id/review/:id', async (req, res) => {})
+
+    // delete a review for a freelancer
+    app.delete('/freelancer/:id/review/:id', async (req, res) => {})
 }
 
 main();
