@@ -4,7 +4,6 @@ const ObjectId = require("mongodb").ObjectId;
 // read from .env file
 require('dotenv').config();
 
-
 // Retrieve the MongoDB url and DB name from environment variable, defined in .env file
 let mongoUrl = process.env.MONGO_URL;
 let dbName = process.env.MONGO_DBNAME;

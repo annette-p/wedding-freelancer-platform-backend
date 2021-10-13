@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const Freelancers = require("./models/Freelancers")
+const Freelancers = require("./models/Freelancers");
+const Reviews = require("./models/Reviews");
 
 let app = express();
 
@@ -56,7 +57,7 @@ async function main() {
     // get freelancer by id
     app.get('/freelancer/:id', async(req,res)=>{
         try {
-            let result = await Freelancers.getById(req.params.id)
+            let result = await Reviews.getById(req.params.id)
             res.status(200);
             res.send(result)
         } catch (e) {
@@ -150,11 +151,23 @@ async function main() {
         }
     })
 
-    // get all reviews for a freelancer
-    app.get('/freelancer/:id/reviews', async (req, res) => {})
+    // get all reviews for a freelancer by freelancer ID
+    app.get('/freelancer/:id/reviews', async (req, res) => {
+        try {
+            let result = await Reviews.getByFreelancerId(req.params.id)
+            res.status(200);
+            res.send(result)
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.error(e);
+        }
+    })
 
-    // get a review for a freelancer
-    app.get('/freelancer/:id/review/:id', async (req, res) => {})
+    // create a review for a freelancer from freelancer profile
+    app.post('/freelancer/:id/review', async (req, res) => {})
 
     // delete a review for a freelancer
     app.delete('/freelancer/:id/review/:id', async (req, res) => {})
