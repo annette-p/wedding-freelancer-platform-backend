@@ -54,6 +54,25 @@ async function addReview(freelancerId, newReview) {
     }
 }
 
+// remove review & comment to respective freelancer profile
+async function removeReview(reviewId) {
+    try {
+        let db = await MongoUtil.connect(mongoUrl, dbName);
+        let result = await db.collection(collectionName).deleteOne({
+            '_id': ObjectId(reviewId)
+        });
+        return result
+    } catch(e) {
+        errorMsg = `
+        Error encountered when removing data from DB.
+        DB: ${dbName}, Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
+        `
+        console.error(errorMsg)
+        throw errorMsg
+    }
+}
+
+
 module.exports = {
-    addReview, getByFreelancerId
+    addReview, getByFreelancerId, removeReview
 }
