@@ -12,18 +12,16 @@ let collectionName = "reviews";
 // get all reviews for respective freelancer from DB
 async function getByFreelancerId(freelancerId) {
 
-    console.log(freelancerId)
-
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).find({
-            "for._id": ObjectId(freelancerId)
+            "for": ObjectId(freelancerId)
         }, {
             "rating": 1,
             "date": 1,
             "reviewer.name": 1,
             "description": 1
-        });
+        }).toArray();
         return result;
     } catch(e) {
         errorMsg = `
@@ -35,6 +33,27 @@ async function getByFreelancerId(freelancerId) {
     }
 }
 
+
+// add new review & comment to respective freelancer profile
+async function addReview(freelancerId, newReview) {
+
+    // to add a new "for" key with value as freelancer ID (tagging this new review to existing selected freelancer ID)
+    newReview["for"] = ObjectId(freelancerId)
+
+    try {
+        let db = await MongoUtil.connect(mongoUrl, dbName);
+        let result = await db.collection(collectionName).insertOne(newReview);
+        return result
+    } catch(e) {
+        errorMsg = `
+        Error encountered when inserting data into DB.
+        DB: ${dbName}, Collection: ${collectionName}, Error: ${e}
+        `
+        console.error(errorMsg)
+        throw errorMsg
+    }
+}
+
 module.exports = {
-    getByFreelancerId
+    addReview, getByFreelancerId
 }

@@ -13,6 +13,8 @@ app.use(cors());
 
 async function main() {
 
+    /* ........................ Freelancer dataset collection................................. */
+
     // retrieve list of freelancers
     app.get('/freelancers', async (req, res) => {
 
@@ -57,7 +59,7 @@ async function main() {
     // get freelancer by id
     app.get('/freelancer/:id', async(req,res)=>{
         try {
-            let result = await Reviews.getById(req.params.id)
+            let result = await Freelancers.getById(req.params.id)
             res.status(200);
             res.send(result)
         } catch (e) {
@@ -72,8 +74,7 @@ async function main() {
     // add freelancer
     app.post('/freelancer', async (req, res) => {
         try {
-            // req.body is an object that contains the
-            // data sent to the express endpoint
+            // req.body is an object that contains the data sent to the express endpoint
             /*
                 {
                  "data": {data of freelancer}
@@ -151,6 +152,8 @@ async function main() {
         }
     })
 
+    /* ........................ Review dataset collection................................. */
+
     // get all reviews for a freelancer by freelancer ID
     app.get('/freelancer/:id/reviews', async (req, res) => {
         try {
@@ -166,8 +169,34 @@ async function main() {
         }
     })
 
-    // create a review for a freelancer from freelancer profile
-    app.post('/freelancer/:id/review', async (req, res) => {})
+    // create new review for a freelancer from each respective freelancer profile
+    app.post('/freelancer/:id/review', async (req, res) => {
+        try {
+            // req.body is an object that contains the data sent to the express endpoint
+            let newReviewData = req.body.data;
+            let freelancerId = req.params.id;   // retrieve freelancer ID
+
+            let result = await Reviews.addReview(freelancerId, newReviewData);
+
+            // inform the client that the process is successful
+            res.status(200);
+            res.json(result);
+            /*
+                {
+                    "acknowledged": true,
+                    "insertedId": "6166a1ba080db9e4a71918ee"
+                }
+            */
+
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.error(e);
+        }
+    })
+
 
     // delete a review for a freelancer
     app.delete('/freelancer/:id/review/:id', async (req, res) => {})

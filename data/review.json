@@ -3,49 +3,34 @@
     "_id": "r1",
     "date": "2021/03/15",
     "reviewer": {
-      "id": "x1",
       "name": "Lisa",
       "tag": "anonymous"
     },
     "rating": 5,
     "description": "Walle is fantastic person and he help guide us how to post on the photo. He know many nice spot for stunning photho at free of cost!",
-    "for": {
-      "_id": "616653f5262d7d4b850482d5",
-      "name": "Walle",
-      "type": "photographer"
-    }
+    "for": "616653f5262d7d4b850482d5"
   },
   {
     "_id": "r2",
     "date": "2021/02/15",
     "reviewer": {
-      "id": "x2",
       "name": "Yoshi",
       "tag": "anonymous"
     },
     "rating": 1,
     "description": "unaceptable job, terrible VDO and bad attitude",
-    "for": {
-        "_id": "f3",
-        "name": "Mark",
-        "type": "VDOgrapher"
-      }
+    "for":  "616663a3d29fa9bc58c8b97e"
   },
   {
     "_id": "r3",
     "date": "2021/08/15",
     "reviewer": {
-      "id": "x3",
       "name": "Lisa",
       "tag": "anonymous"
     },
     "rating": 3,
     "description": "neutral. worth the price if you are on tight budget",
-    "for": {
-      "_id": "f2",
-      "name": "Linda",
-      "type": "makeup-artist"
-      }
+    "for": "616661b1d29fa9bc58c8b97d"
   }
 
 ]
