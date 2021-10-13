@@ -47,6 +47,7 @@ async function getById(freelancerId) {
 }
 
 async function add(freelancer) {
+    console.log(freelancer)
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).insertOne(freelancer);

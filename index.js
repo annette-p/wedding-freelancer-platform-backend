@@ -17,7 +17,7 @@ async function main() {
 
         try {
 
-            // NOT IMPLEMENTED YET - FUTURE SEARCH 
+            // ** NOT IMPLEMENTED YET - FUTURE SEARCH **
             // start with an empty critera object
             let criteria = {};
 
@@ -38,7 +38,7 @@ async function main() {
                 }
             }
 
-            // END OF NOT IMPLEMENTED
+            // ** END OF NOT IMPLEMENTED **
 
             let result = await Freelancers.get(criteria);
 
@@ -73,6 +73,11 @@ async function main() {
         try {
             // req.body is an object that contains the
             // data sent to the express endpoint
+            /*
+                {
+                 "data": {data of freelancer}
+                }
+            */
             let freelancerData = req.body.data;
 
             let result = await Freelancers.add(freelancerData);
@@ -80,6 +85,12 @@ async function main() {
             // inform the client that the process is successful
             res.status(200);
             res.json(result);
+            /*
+            {
+                "acknowledged": true,
+                "insertedId": "616661b1d29fa9bc58c8b97d"
+            }
+            */
         } catch (e) {
             res.status(500);
             res.json({
@@ -98,6 +109,16 @@ async function main() {
             let result = await Freelancers.update(req.params.id, updatedFreelancerData)
             res.status(200);
             res.send(result)
+            /*
+            the update test result: 
+                {
+                    "acknowledged": true,
+                    "modifiedCount": 1,
+                    "upsertedId": null,
+                    "upsertedCount": 0,
+                    "matchedCount": 1
+                }
+            */
         } catch (e) {
             res.status(500);
             res.json({
@@ -113,6 +134,13 @@ async function main() {
             let results = await Freelancers.remove(req.params.id)
             res.status(200);
             res.send(results);
+            /*
+            sucessful response: 
+                {
+                    "acknowledged": true,
+                    "deletedCount": 1
+                }
+            */
         } catch (e) {
             res.status(500);
             res.json({
