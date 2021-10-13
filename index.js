@@ -198,27 +198,30 @@ async function main() {
     })
 
 
+    /* De-activate the delete function for review at this moment >> only will allow the admin access in the future to perform this task */ 
     // delete a review for a freelancer
-    app.delete('/freelancer/:id/review/:id', async (req, res) => {
-        try {
-            let results = await Reviews.removeReview(req.params.id)
-            res.status(200);
-            res.send(results);
-            /*
-            {
-                "acknowledged": true,
-                "deletedCount": 1
-            }
-            */
+    // app.delete('/freelancer/:id/review/:id', async (req, res) => {
+    //     try {
+    //         let results = await Reviews.removeReview(req.params.id)
+    //         res.status(200);
+    //         res.send(results);
+    //         /*
+    //         {
+    //             "acknowledged": true,
+    //             "deletedCount": 1
+    //         }
+    //         */
 
-        } catch (e) {
-            res.status(500);
-            res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
-            });
-            console.error(e);
-        }
-    })
+    //     } catch (e) {
+    //         res.status(500);
+    //         res.json({
+    //             'error': "We have encountered an interal server error. Please contact admin"
+    //         });
+    //         console.error(e);
+    //     }
+    // })
+
+
 }
 
 main();

@@ -41,6 +41,7 @@ async function addReview(freelancerId, newReview) {
 
     // to add a new "for" key with value as freelancer ID (tagging this new review to existing selected freelancer ID)
     newReview["for"] = ObjectId(freelancerId)
+    newReview["date"] = new Date();  // the datetime default to NOW -- current date time
 
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);

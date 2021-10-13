@@ -46,7 +46,7 @@ async function getById(freelancerId) {
 }
 
 async function add(freelancer) {
-    console.log(freelancer)
+    freelancer["date"] = new Date();  // the datetime default to NOW -- current date time
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).insertOne(freelancer);
