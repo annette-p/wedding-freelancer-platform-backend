@@ -17,10 +17,12 @@ async function getByFreelancerId(freelancerId) {
         let result = await db.collection(collectionName).find({
             "for": ObjectId(freelancerId)
         }, {
-            "rating": 1,
-            "date": 1,
-            "reviewer.name": 1,
-            "description": 1
+            "projection": {
+                "rating": 1,
+                "date": 1,
+                "reviewer.name": 1,
+                "description": 1
+            }       
         }).toArray();
         return result;
     } catch(e) {
