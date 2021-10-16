@@ -1,17 +1,17 @@
 [
   {
     "_id": "l1",
-    "userName": "email_1",
+    "username": "email_1",
     "password": "password1"
   },
   {
     "_id": "l2",
-    "userName": "email_2",
+    "username": "email_2",
     "password": "password2"
   },
   {
     "_id": "l3",
-    "userName": "email_3",
+    "username": "email_3",
     "password": "password3"
   }
 ]
