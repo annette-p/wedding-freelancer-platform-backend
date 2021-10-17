@@ -1,5 +1,6 @@
 const MongoUtil = require("./MongoUtil");
 const ObjectId = require("mongodb").ObjectId;
+const Logins = require("./Logins")
 
 // read from .env file
 require('dotenv').config();
@@ -11,11 +12,11 @@ let collectionName = "freelancers";
 
 
 // get all freelancers from DB
-async function get(query) {
+async function get(query, projection) {
 
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
-        let result = await db.collection(collectionName).find(query).toArray();
+        let result = await db.collection(collectionName).find(query, projection).toArray();
         return result;
     } catch(e) {
         errorMsg = `
@@ -46,6 +47,46 @@ async function getById(freelancerId) {
 }
 
 async function add(freelancer) {
+
+    // User Login Registration
+
+    // username provided but not password
+    if (freelancer.hasOwnProperty("username") && !freelancer.hasOwnProperty("password")) {
+        errorMsg = `Password not provided`
+        throw errorMsg
+    }
+
+    // password provided but not username
+    if (freelancer.hasOwnProperty("password") && !freelancer.hasOwnProperty("username")) {
+        errorMsg = `Username not provided`
+        throw errorMsg
+    }
+
+    // if username/password provided, register the login first
+    if (freelancer.hasOwnProperty("username") && freelancer.hasOwnProperty("password")) {
+
+        try {
+            let registeredLogin = await Logins.register(freelancer.username, freelancer.password)
+            console.log("registeredLogin: ", registeredLogin)
+            if (registeredLogin !== null) {
+                // Registration successful
+
+                // login details is already stored separately in another "login" collection
+                // hence removing them so that they will not be in "freelancers" collection
+                delete freelancer.username
+                delete freelancer.password
+
+                // tag the login unique id to the freelancer
+                freelancer.login = registeredLogin.insertedId
+            } else {
+                throw "Registration failed"
+            }
+        } catch (e) {
+            throw e;
+        }
+        
+    }
+
     freelancer["date"] = new Date();  // the datetime default to NOW -- current date time
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
@@ -83,6 +124,14 @@ async function update(freelancerId, updatedFreelancerInfo) {
 async function remove(freelancerId) {
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
+        let freelancer = await getById(freelancerId);
+        if (freelancer.hasOwnProperty("login") && ObjectId.isValid(freelancer.login)) {
+            // freelance has a login associated, proceed to delete
+            let _result = await Logins.remove(freelancer.login);
+            if (_result.deletedCount !== 1) {
+                console.error(`Failed to delete registration record for Freelancer ID ${freelancerId}, Login ID ${freelancer.login}`)
+            }
+        }
         let result = await db.collection(collectionName).deleteOne({
             '_id': ObjectId(freelancerId)
         });

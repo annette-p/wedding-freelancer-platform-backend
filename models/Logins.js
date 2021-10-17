@@ -74,7 +74,7 @@ async function verify(username, password) {
     // this time pass 2 arguments which is including password as true)
     let user = await getByUsername(username, true);
     // compare password provided by user with the one in DB
-    if (user !== null && bcrypt.compareSync(password, user.password) === true) {
+    if (user !== null && await bcrypt.compare(password, user.password) === true) {
         // remove the encrypted password that was retrieved from DB
         delete user.password
         return user;
@@ -87,7 +87,7 @@ async function verify(username, password) {
 async function changePassword(username, currentPassword, newPassword) {
 
     // check whether username and current password is correct
-    let user = verify(username, currentPassword);
+    let user = await verify(username, currentPassword);
     if (user === null) {
         throw `Unable to change password. Username ${username} does not exists or current password incorrect`;
     }

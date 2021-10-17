@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const Freelancers = require("./models/Freelancers");
+const Logins = require("./models/Logins")
 const Reviews = require("./models/Reviews");
 
 let app = express();
@@ -23,6 +24,9 @@ async function main() {
             // ** NOT IMPLEMENTED YET - FUTURE SEARCH **
             // start with an empty critera object
             let criteria = {};
+            let projection = { 
+                'projection': {} 
+            }
 
             // we fill in the critera depending on whether specific
             // query string keys are provided
@@ -43,7 +47,7 @@ async function main() {
 
             // ** END OF NOT IMPLEMENTED **
 
-            let result = await Freelancers.get(criteria);
+            let result = await Freelancers.get(criteria, projection);
 
             res.status(200);
             res.send(result);
@@ -221,6 +225,70 @@ async function main() {
     //     }
     // })
 
+
+    // new login registration
+    app.post('/login', async (req, res) => {
+        try {
+            const username = req.body.username;
+            const password = req.body.password;
+
+            let result = await Logins.verify(username, password);
+
+            if (result !== null) {
+                let result2 = await Freelancers.get(
+                    {
+                        "login": result._id
+                    },
+                    {
+                        "projection": { "_id": 1 }
+                    }
+                )
+
+                if (result2 !== null) {
+                    // inform the client that the process is successful
+                    res.status(200);
+                    res.json(result2);
+                } else {
+                    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+                    res.status(401)
+                    res.json({
+                        "error": "Login failed"
+                    })
+                }
+            } else {
+                // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
+                res.status(401)
+                res.json({
+                    "error": "Login failed"
+                })
+            }
+
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.error(e);
+        }
+    })
+
+    app.put('/change-password', async (req, res) => {
+        try {
+            let username = req.body.username;
+            let currentPassword = req.body.currentPassword;
+            let newPassword = req.body.newPassword;
+
+            let result = await Logins.changePassword(username, currentPassword, newPassword)
+            res.status(200);
+            res.send(result)
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.error(e);
+        }
+    })
 
 }
 
