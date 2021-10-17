@@ -4,10 +4,7 @@
     "type": "photographer",
     "specialized": ["photographer", "videographer"],  
     "rate": "S$25 hourly",
-    "owner": {
-      "_id": "l1",
-      "userName": "email_1"
-    },
+    "login": "l1",
     "name": "Walle",
     "profileImage": "https://images.unsplash.com/photo-1620000617482-821324eb9a14",
     "socialMedia": {

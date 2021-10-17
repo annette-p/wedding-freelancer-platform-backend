@@ -67,7 +67,6 @@ async function add(freelancer) {
 
         try {
             let registeredLogin = await Logins.register(freelancer.username, freelancer.password)
-            console.log("registeredLogin: ", registeredLogin)
             if (registeredLogin !== null) {
                 // Registration successful
 
@@ -125,11 +124,13 @@ async function remove(freelancerId) {
     try {
         let db = await MongoUtil.connect(mongoUrl, dbName);
         let freelancer = await getById(freelancerId);
+        // check if the freelancer has login and if it is valid format
         if (freelancer.hasOwnProperty("login") && ObjectId.isValid(freelancer.login)) {
-            // freelance has a login associated, proceed to delete
+            // freelancer has a login associated, proceed to delete
             let _result = await Logins.remove(freelancer.login);
+            // notify that the login record don't exist but did not abort the operation
             if (_result.deletedCount !== 1) {
-                console.error(`Failed to delete registration record for Freelancer ID ${freelancerId}, Login ID ${freelancer.login}`)
+                console.error(`Failed to delete login record for Freelancer ID ${freelancerId}, Login ID ${freelancer.login}`)
             }
         }
         let result = await db.collection(collectionName).deleteOne({

@@ -17,4 +17,13 @@ function getDB() {
     return _db;
 }
 
-module.exports = { connect, getDB }
+// https://stackify.com/node-js-error-handling/
+class DBError extends Error {
+    constructor(args) {
+        super(args)
+        this.name = "DBError"
+        this.statusCode = 500
+    }
+}
+
+module.exports = { connect, getDB, DBError }

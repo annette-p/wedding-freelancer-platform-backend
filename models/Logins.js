@@ -89,7 +89,7 @@ async function changePassword(username, currentPassword, newPassword) {
     // check whether username and current password is correct
     let user = await verify(username, currentPassword);
     if (user === null) {
-        throw `Unable to change password. Username ${username} does not exists or current password incorrect`;
+        throw new LoginError(`Unable to change password. Username ${username} does not exists or current password incorrect`);
     }
 
     // generate a salt, and use bcrypt.hash to encrypt the provided password
@@ -111,7 +111,7 @@ async function changePassword(username, currentPassword, newPassword) {
         DB: ${dbName}, Collection: ${collectionName}, Login Id: ${user._id.str}, Username: ${username}, Error: ${e}
         `;
         console.error(errorMsg);
-        throw errorMsg;
+        throw new MongoUtil.DBError(errorMsg);
     }
 }
 
@@ -132,6 +132,15 @@ async function remove(id) {
     }
 }
 
+// https://stackify.com/node-js-error-handling/
+class LoginError extends Error {
+    constructor(args) {
+        super(args)
+        this.name = "LoginError"
+        this.statusCode = 401
+    }
+}
+
 module.exports = {
-    changePassword, getByUsername, register, remove, verify
+    changePassword, getByUsername, register, remove, verify, LoginError
 }

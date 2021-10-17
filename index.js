@@ -232,36 +232,48 @@ async function main() {
             const username = req.body.username;
             const password = req.body.password;
 
-            let result = await Logins.verify(username, password);
+            if (username === undefined || password === undefined) {
+                res.status(400);
+                res.json({
+                    "error": "Missing username and/or password"
+                });
+                return;
+            }
 
+            let result = await Logins.verify(username, password);
+            // check in logins collection DB if the username/password exist using verify function
             if (result !== null) {
+                // take that _id in logins collection DB, look into freelancer collection DB to find the freelancer that hold that login _id (under "login" key)
                 let result2 = await Freelancers.get(
                     {
                         "login": result._id
                     },
                     {
-                        "projection": { "_id": 1 }
+                        "projection": {
+                            "login": 0,
+                            "date": 0
+                        }
                     }
                 )
 
+                // verify if there's freelancer with this login provided (able to find in freelancer collection DB)
                 if (result2 !== null) {
-                    // inform the client that the process is successful
+                    // inform the user that the process is successful
                     res.status(200);
-                    res.json(result2);
-                } else {
-                    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
-                    res.status(401)
                     res.json({
-                        "error": "Login failed"
-                    })
-                }
-            } else {
-                // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
-                res.status(401)
-                res.json({
-                    "error": "Login failed"
-                })
+                        "success": true,
+                        "freelancer": result2
+                    });
+                    return;
+                } 
             }
+
+            // there's no full match (either) username/password in logins collection DB, or
+            // no freelancer with this login provided (unable to find in freelancer collection DB)
+            res.status(401);
+            res.json({
+                "error": "Login failed"
+            });
 
         } catch (e) {
             res.status(500);
@@ -272,19 +284,42 @@ async function main() {
         }
     })
 
+    // change password
     app.put('/change-password', async (req, res) => {
-        try {
-            let username = req.body.username;
-            let currentPassword = req.body.currentPassword;
-            let newPassword = req.body.newPassword;
+        let username = req.body.username;
+        let currentPassword = req.body.currentPassword;
+        let newPassword = req.body.newPassword;
 
-            let result = await Logins.changePassword(username, currentPassword, newPassword)
-            res.status(200);
-            res.send(result)
-        } catch (e) {
-            res.status(500);
+        if (username === undefined || currentPassword === undefined || newPassword === undefined) {
+            res.status(400);
             res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
+                "error": "Missing username, current password and/or new password"
+            });
+            return;
+        }
+
+        try {
+            let result = await Logins.changePassword(username, currentPassword, newPassword)
+            if (result.matchedCount === 1 && result.modifiedCount === 1) {
+                res.status(200);
+                res.send({
+                    "success": true,
+                    "message": "Password changed successfully"
+                })
+                return;
+            } else {
+                res.status(400);
+                res.json({
+                    "error": "Password not changed successfully"
+                });
+                return;
+            }
+        } catch (e) {
+            const statusCode = e.statusCode === undefined ? 500 : e.statusCode
+            const errorMessage = e.message === undefined ? "We have encountered an interal server error. Please contact admin" : e.message
+            res.status(statusCode);
+            res.json({
+                'error': errorMessage
             });
             console.error(e);
         }
