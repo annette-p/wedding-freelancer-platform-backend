@@ -14,7 +14,7 @@ app.use(cors());
 
 async function main() {
 
-    /* ........................ Freelancer dataset collection................................. */
+    /* ........................................ Freelancer dataset collection ................................. */
 
     // retrieve list of freelancers
     app.get('/freelancers', async (req, res) => {
@@ -78,72 +78,6 @@ async function main() {
     // add freelancer
     app.post('/freelancer', async (req, res) => {
         try {
-            // req.body is an object that contains the data sent to the express endpoint
-            /*
-                {
-                 "data": {data of freelancer}
-                }
-            */
-
-            let freelancerData = req.body;
-
-            let newFreelancerData = {
-                "type": req.body.type,
-                "specialized": [req.body.specialized],
-                "rate": req.body.rate,
-                "rateUnit": req.body.rateUnit,
-                "login": "****",
-                "name": req.body.name,
-                // "profileImage": req.body.profileImage,
-                // "socialMedia": {
-                //     "facebook": req.body.facebook,
-                //     "instagram": req.body.instagram,
-                //     "tiktok": req.body.tiktok
-                // },
-                "contact": {
-                    // "mobile": req.body.mobile,
-                    "email": req.body.email,
-                    // "website": req.body.website
-                },
-                "bio": req.body.bio,
-                "showCase": req.body.showCase,
-                "portfolios": [
-                    {
-                        "title": req.body.title,
-                        "description": req.body.description,
-                        "url": req.body.url
-                    },
-                ]
-            }
-
-            /* ............. validation .............  */
-
-            if (req.body.profileImage === undefined) {
-                newFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
-            }
-
-            if (req.body.profileImage !== undefined) {
-                newFreelancerData.profileImage = req.body.profileImage
-            }
-
-            // 
-            if (req.body.facebook !== undefined &&
-                req.body.instagram !== undefined &&
-                req.body.tiktok !== undefined)  {
-                newFreelancerData.socialMedia.facebook = req.body.facebook,
-                newFreelancerData.socialMedia.instagram = req.body.instagram,
-                newFreelancerData.socialMedia.tiktok = req.body.tiktok
-            }
-
-            if (req.body.mobile !== undefined) {
-                newFreelancerData.contact.mobile = req.body.mobile
-            }
-
-            if (req.body.website !== undefined) {
-                newFreelancerData.contact.website = req.body.website
-            }
-
-            /* ............. error handling .............  */
 
             if (req.body.type === undefined || 
                 req.body.specialized === undefined || 
@@ -156,19 +90,6 @@ async function main() {
                     "error": "One or more mandatory fields (Name, Type, Specialized, Rate, RateUnit) missing."
                 });
                 return;
-            }
-
-            // atleast 1 must provide
-            if (req.body.facebook === undefined &&
-                req.body.instagram === undefined &&
-                req.body.tiktok === undefined)  {
-
-                res.status(400);
-                res.json({
-                "error": "Must privide atleast one (facebook, instagram, tiktok) field."
-                });
-                return;
-                    
             }
 
             if (req.body.email === undefined) {
@@ -198,6 +119,73 @@ async function main() {
                 return;
             }
 
+            let newFreelancerData = {
+                "type": req.body.type,
+                "specialized": req.body.specialized,
+                "rate": parseInt(req.body.rate),
+                "rateUnit": req.body.rateUnit,
+                "name": req.body.name,
+                "socialMedia": {},
+                "contact": {
+                    "email": req.body.email
+                },
+                "bio": req.body.bio,
+                "showCase": req.body.showCase,
+                "portfolios": [
+                    {
+                        "title": req.body.title,
+                        "description": req.body.description,
+                        "url": req.body.url
+                    },
+                ]
+            }
+
+            /* ............. validation .............  */
+
+            if (req.body.profileImage === undefined) {
+                newFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
+            } else {
+                newFreelancerData.profileImage = req.body.profileImage
+            }
+
+            // social media
+            if (req.body.facebook !== undefined) {
+                newFreelancerData.socialMedia.facebook = req.body.facebook
+            }
+
+            if (req.body.instagram !== undefined) {
+                newFreelancerData.socialMedia.instagram = req.body.instagram
+            }
+
+            if (req.body.tiktok !== undefined)  {
+                newFreelancerData.socialMedia.tiktok = req.body.tiktok
+            }
+
+            // contact 
+
+            if (req.body.mobile !== undefined) {
+                newFreelancerData.contact.mobile = req.body.mobile
+            }
+
+            if (req.body.website !== undefined) {
+                newFreelancerData.contact.website = req.body.website
+            }
+
+            /* ............. error handling .............  */
+
+            // must be atleast 1 social media provide
+            // Object.keys return an arrays of key in the object
+            if (Object.keys(newFreelancerData.socialMedia).length < 1)  {
+                res.status(400);
+                res.json({
+                "error": "Must provide atleast one (facebook, instagram, tiktok) field."
+                });
+                return;       
+            }
+
+            
+
+            // to check again on how to pass the data and perform validation 
             if (req.body.title === undefined || 
                 req.body.description === undefined || 
                 req.body.url === undefined) {
@@ -214,11 +202,29 @@ async function main() {
 
 
 
-            let result = await Freelancers.add(freelancerData);
+            let result = await Freelancers.add(newFreelancerData);
 
-            // inform the client that the process is successful
-            res.status(200);
-            res.json(result);
+            if (result !== null) {
+                // inform the user that the process is successful
+                res.status(201);
+                res.send({
+                    "success": true,
+                    "message": "New freelancer profile added successfully"
+                })
+                return
+                /*
+                    {
+                        "acknowledged": true,
+                        "insertedId": "6166a1ba080db9e4a71918ee"
+                    }
+                */
+            } else {
+                res.status(500);
+                res.json({
+                    "error": "An interal server error encountered. New freelancer profile not added."
+                });
+                return;
+            }
             /*
             {
                 "acknowledged": true,
@@ -284,7 +290,8 @@ async function main() {
         }
     })
 
-    /* ........................ Review dataset collection................................. */
+    
+    /* ........................................ Review dataset collection ................................... */
 
     // get all reviews for a freelancer by freelancer ID
     app.get('/freelancer/:id/reviews', async (req, res) => {
@@ -423,6 +430,8 @@ async function main() {
     //     }
     // })
 
+
+    /* ........................................ Login dataset collection ................................... */
 
     // new login registration
     app.post('/login', async (req, res) => {
