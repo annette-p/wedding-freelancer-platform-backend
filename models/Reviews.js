@@ -19,9 +19,9 @@ async function getByFreelancerId(freelancerId) {
         }, {
             "projection": {
                 "rating": 1,
-                "date": 1,
                 "reviewer.name": 1,
-                "description": 1
+                "description": 1,
+                "recommend": 1
             }       
         }).toArray();
         return result;
@@ -31,7 +31,7 @@ async function getByFreelancerId(freelancerId) {
         DB: ${dbName}, Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
         `
         console.error(errorMsg)
-        throw errorMsg
+        throw new MongoUtil.DBError(errorMsg);
     }
 }
 
@@ -54,7 +54,7 @@ async function addReview(freelancerId, newReview) {
         DB: ${dbName}, Collection: ${collectionName}, Error: ${e}
         `
         console.error(errorMsg)
-        throw errorMsg
+        throw new MongoUtil.DBError(errorMsg);
     }
 }
 
@@ -72,11 +72,19 @@ async function removeReview(reviewId) {
         DB: ${dbName}, Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
         `
         console.error(errorMsg)
-        throw errorMsg
+        throw new MongoUtil.DBError(errorMsg);
     }
 }
 
+// https://stackify.com/node-js-error-handling/
+class ReviewError extends Error {
+    constructor(args) {
+        super(args)
+        this.name = "ReviewError"
+        this.statusCode = 400
+    }
+}
 
 module.exports = {
-    addReview, getByFreelancerId, removeReview
+    addReview, getByFreelancerId, removeReview, ReviewError
 }

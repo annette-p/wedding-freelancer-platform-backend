@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const Freelancers = require("./models/Freelancers");
-const Logins = require("./models/Logins")
+const Logins = require("./models/Logins");
 const Reviews = require("./models/Reviews");
 
 let app = express();
@@ -175,27 +175,97 @@ async function main() {
 
     // create new review for a freelancer from each respective freelancer profile
     app.post('/freelancer/:id/review', async (req, res) => {
-        try {
-            // req.body is an object that contains the data sent to the express endpoint
-            let newReviewData = req.body.data;
-            let freelancerId = req.params.id;   // retrieve freelancer ID
+        /*
+            structure of a review:
+            {
+                "date": <system_date_time>,
+                "for": <objectId_of_freelancer>,
+                "reviewer": {
+                    "name": "string_compulsory",
+                    "email": "string_optional",
+                    "tag": "anonymous"
+                },
+                "rating": <numeric_1_to_5>,
+                "recommend": <bool>,
+                "description": <string_compulsory>
+            }
+        */
 
+        if (req.body.reviewerName === undefined || 
+            req.body.rating === undefined || 
+            req.body.recommend === undefined || 
+            req.body.description === undefined) {
+
+            res.status(400);
+            res.json({
+                "error": "One or more mandatory fields (description, reviewerName, rating, recommend) missing."
+            });
+            return;
+
+        }
+
+        if (typeof req.body.recommend !== "boolean") {
+            res.status(400);
+            res.json({
+                "error": "'recommend' should be a boolean (i.e. true or false)"
+            });
+            return;
+        }
+        
+        if (isNaN(req.body.rating) || parseInt(req.body.rating) < 0 || parseInt(req.body.rating) > 5) {
+            res.status(400);
+            res.json({
+                "error": "'rating' should be numeric, between 1 to 5"
+            });
+            return;
+        }
+
+        let newReviewData = {
+            "reviewer": {
+                "name": req.body.name
+            },
+            "description": req.body.description,
+            "rating": parseInt(req.body.rating),
+            "recommend": req.body.recommend,
+        }
+
+        if (req.body.email !== undefined) {
+            newReviewData.reviewer.email = req.body.description
+        }
+
+        let freelancerId = req.params.id;   // retrieve freelancer ID
+
+        try {
             let result = await Reviews.addReview(freelancerId, newReviewData);
 
-            // inform the client that the process is successful
-            res.status(200);
-            res.json(result);
-            /*
-                {
-                    "acknowledged": true,
-                    "insertedId": "6166a1ba080db9e4a71918ee"
-                }
-            */
+            if (result !== null) {
+                // inform the user that the process is successful
+                res.status(201);
+                res.send({
+                    "success": true,
+                    "message": "New review added successfully"
+                })
+                return
+                /*
+                    {
+                        "acknowledged": true,
+                        "insertedId": "6166a1ba080db9e4a71918ee"
+                    }
+                */
+            } else {
+                res.status(500);
+                res.json({
+                    "error": "An interal server error encountered. New review not added."
+                });
+                return;
+            }
 
         } catch (e) {
-            res.status(500);
+            const statusCode = e.statusCode === undefined ? 500 : e.statusCode
+            const errorMessage = e.message === undefined ? "We have encountered an interal server error. Please contact admin" : e.message
+            res.status(statusCode);
             res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
+                'error': errorMessage
             });
             console.error(e);
         }
