@@ -92,7 +92,7 @@ async function main() {
                 return;
             }
 
-            if (req.body.email === undefined) {
+            if (req.body.contact.email === undefined) {
 
                 res.status(400);
                 res.json({
@@ -127,15 +127,15 @@ async function main() {
                 "name": req.body.name,
                 "socialMedia": {},
                 "contact": {
-                    "email": req.body.email
+                    "email": req.body.contact.email
                 },
                 "bio": req.body.bio,
                 "showCase": req.body.showCase,
                 "portfolios": [
                     {
-                        "title": req.body.title,
-                        "description": req.body.description,
-                        "url": req.body.url
+                        "title": req.body.portfolios[0].title,
+                        "description": req.body.portfolios[0].description,
+                        "url": req.body.portfolios[0].url
                     },
                 ]
             }
@@ -149,26 +149,26 @@ async function main() {
             }
 
             // social media
-            if (req.body.facebook !== undefined) {
-                newFreelancerData.socialMedia.facebook = req.body.facebook
+            if (req.body.socialMedia.facebook !== undefined) {
+                newFreelancerData.socialMedia.facebook = req.body.socialMedia.facebook
             }
 
-            if (req.body.instagram !== undefined) {
-                newFreelancerData.socialMedia.instagram = req.body.instagram
+            if (req.body.socialMedia.instagram !== undefined) {
+                newFreelancerData.socialMedia.instagram = req.body.socialMedia.instagram
             }
 
-            if (req.body.tiktok !== undefined)  {
-                newFreelancerData.socialMedia.tiktok = req.body.tiktok
+            if (req.body.socialMedia.tiktok !== undefined)  {
+                newFreelancerData.socialMedia.tiktok = req.body.socialMedia.tiktok
             }
 
             // contact 
 
-            if (req.body.mobile !== undefined) {
-                newFreelancerData.contact.mobile = req.body.mobile
+            if (req.body.contact.mobile !== undefined) {
+                newFreelancerData.contact.mobile = req.body.contact.mobile
             }
 
-            if (req.body.website !== undefined) {
-                newFreelancerData.contact.website = req.body.website
+            if (req.body.contact.website !== undefined) {
+                newFreelancerData.contact.website = req.body.contact.website
             }
 
             /* ............. error handling .............  */
@@ -186,9 +186,9 @@ async function main() {
             
 
             // to check again on how to pass the data and perform validation 
-            if (req.body.title === undefined || 
-                req.body.description === undefined || 
-                req.body.url === undefined) {
+            if (req.body.portfolios[0].title === undefined || 
+                req.body.portfolios[0].description === undefined || 
+                req.body.portfolios[0].url === undefined) {
     
                 res.status(400);
                 res.json({
