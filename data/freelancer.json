@@ -1,10 +1,11 @@
 [
   {
-    "_id": "f1",
+    "_id": "616653f5262d7d4b850482d5",
     "type": "photographer",
     "specialized": ["photographer", "videographer"],  
-    "rate": "S$25 hourly",
-    "login": "l1",
+    "rate": "25",
+    "rateUnit": "hour",
+    "login": "_id",
     "name": "Walle",
     "profileImage": "https://images.unsplash.com/photo-1620000617482-821324eb9a14",
     "socialMedia": {
@@ -15,24 +16,35 @@
     "contact": {
       "mobile": "9156584",
       "email": "walle@gmail.com",
-      "web": "walle@image.com"
+      "website": "walle-image.com"
     },
+    "bio": " have worked on many diverse photography projects, including fashion, still, events and wedding photoshoots. Since I do not limit myself to just one genre of photography, my skills are varied, yet focused on both subject and quality of my projects.",
     "showCase": "https://images.pexels.com/photos/265722/pexels-photo-265722.jpeg",
-    "portfolio": ["image1.jpg", "image2.jpg"],
-    "review": {
-      "_id": "r1",
-      "rating": 5,
-      "date": "2021/03/15",
-      "detail": "Walle is fantastic person and he help guide us how to post on the photo. He know many nice spot for stunning photho at free of cost!",
-      "from": "Lisa"
-    }
+    "portfolios": [
+      {
+        "title": "Pre-wedding",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/4820104/pexels-photo-4820104.jpeg"
+      },
+      {
+        "title": "Actual Wedding Day",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/2253842/pexels-photo-2253842.jpeg"
+      },
+      {
+        "title": "Proposal",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/1578873/pexels-photo-1578873.jpeg"
+      }
+    ]
   },
   {
-    "_id": "f2",
+    "_id": "616661b1d29fa9bc58c8b97d",
     "type": "makeup-artist",
     "specialized": ["wedding", "fancy"],  
-    "rate": "S$45 /session",
-    "owner": {},
+    "rate": "45",
+    "rateUnit": "session",
+    "login": "",
     "name": "Linda",
     "profileImage": "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
     "socialMedia": {
@@ -42,27 +54,35 @@
     "contact": {
       "mobile": "815852",
       "email": "linda@gmail.com",
-      "web": "linda@makeup.com"
+      "website": "linda-makeup.com"
     },
+    "bio": "I am profressional makeup artist for decade. My most specialisation is into wedding makeup. I enjoy being part of one of the big days where woman want to look most beautiful.",
     "showCase": "https://images.pexels.com/photos/157757/wedding-dresses-fashion-character-bride-157757.jpeg",
-    "portfolio": ["linda-image1.jpg", "linda-image2.jpg"],
-    "review": {
-      "_id": "r3",
-      "rating": 3,
-      "date": "2021/08/15",
-      "detail": "neutral. worth the price if you are on tight budget",
-      "from": "Lisa"
-    }
+    "portfolios": [
+      {
+        "title": "Bridal makeup",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/3715086/pexels-photo-3715086.jpeg"
+      },
+      {
+        "title": "Natural glow makeup",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/759668/pexels-photo-759668.jpeg"
+      },
+      {
+        "title": "Pre-wedding",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/5984214/pexels-photo-5984214.jpeg"
+      }
+    ]
   },
   {
-    "_id": "f3",
+    "_id": "616663a3d29fa9bc58c8b97e",
     "type": "videographer",
     "specialized": ["VDO-motion"],  
-    "rate": "S$40 hourly",
-    "owner": {
-      "_id": "l2",
-      "userName": "email_2"
-    },
+    "rate": "40",
+    "rateUnit": "hour",
+    "login": "",
     "name": "Mark",
     "profileImage": "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79",
     "socialMedia": {
@@ -72,16 +92,26 @@
     "contact": {
       "mobile": "56665555",
       "email": "mark@gmail.com",
-      "web": "mark@motion.com"
+      "website": "mark-motion.com"
     },
+    "bio": "I like to capture the moment in the motion where we can refer for the life time. I am profressional videographer who is fully equipped with new technology and new series of gadgets inlcuding drone.",
     "showCase": "https://images.pexels.com/photos/1244700/pexels-photo-1244700.jpeg",
-    "portfolio": ["mark-image1.jpg", "mark-image2.jpg"],
-    "review": {
-      "_id": "r2",
-      "rating": 1,
-      "date": "2021/02/15",
-      "detail": "unaceptable job, terrible VDO and bad attitude",
-      "from": "Yoshi"
-    }
+    "portfolios": [
+      {
+        "title": "Pre-wedding",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/4031768/pexels-photo-4031768.jpeg"
+      },
+      {
+        "title": "ROM",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/3865895/pexels-photo-3865895.jpeg"
+      },
+      {
+        "title": "Wedding day",
+        "description": "This is a test image. To display my work",
+        "url": "https://images.pexels.com/photos/5984229/pexels-photo-5984229.jpeg"
+      }
+    ]
   }
 ]

@@ -84,7 +84,135 @@ async function main() {
                  "data": {data of freelancer}
                 }
             */
-            let freelancerData = req.body.data;
+
+            let freelancerData = req.body;
+
+            let newFreelancerData = {
+                "type": req.body.type,
+                "specialized": [req.body.specialized],
+                "rate": req.body.rate,
+                "rateUnit": req.body.rateUnit,
+                "login": "****",
+                "name": req.body.name,
+                // "profileImage": req.body.profileImage,
+                // "socialMedia": {
+                //     "facebook": req.body.facebook,
+                //     "instagram": req.body.instagram,
+                //     "tiktok": req.body.tiktok
+                // },
+                "contact": {
+                    // "mobile": req.body.mobile,
+                    "email": req.body.email,
+                    // "website": req.body.website
+                },
+                "bio": req.body.bio,
+                "showCase": req.body.showCase,
+                "portfolios": [
+                    {
+                        "title": req.body.title,
+                        "description": req.body.description,
+                        "url": req.body.url
+                    },
+                ]
+            }
+
+            /* ............. validation .............  */
+
+            if (req.body.profileImage === undefined) {
+                newFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
+            }
+
+            if (req.body.profileImage !== undefined) {
+                newFreelancerData.profileImage = req.body.profileImage
+            }
+
+            // 
+            if (req.body.facebook !== undefined &&
+                req.body.instagram !== undefined &&
+                req.body.tiktok !== undefined)  {
+                newFreelancerData.socialMedia.facebook = req.body.facebook,
+                newFreelancerData.socialMedia.instagram = req.body.instagram,
+                newFreelancerData.socialMedia.tiktok = req.body.tiktok
+            }
+
+            if (req.body.mobile !== undefined) {
+                newFreelancerData.contact.mobile = req.body.mobile
+            }
+
+            if (req.body.website !== undefined) {
+                newFreelancerData.contact.website = req.body.website
+            }
+
+            /* ............. error handling .............  */
+
+            if (req.body.type === undefined || 
+                req.body.specialized === undefined || 
+                req.body.rate === undefined || 
+                req.body.rateUnit === undefined ||
+                req.body.name === undefined) {
+    
+                res.status(400);
+                res.json({
+                    "error": "One or more mandatory fields (Name, Type, Specialized, Rate, RateUnit) missing."
+                });
+                return;
+            }
+
+            // atleast 1 must provide
+            if (req.body.facebook === undefined &&
+                req.body.instagram === undefined &&
+                req.body.tiktok === undefined)  {
+
+                res.status(400);
+                res.json({
+                "error": "Must privide atleast one (facebook, instagram, tiktok) field."
+                });
+                return;
+                    
+            }
+
+            if (req.body.email === undefined) {
+
+                res.status(400);
+                res.json({
+                    "error": "Mandatory field (email) is missing."
+                });
+                return;
+            }
+
+            if (req.body.bio === undefined) {
+
+                res.status(400);
+                res.json({
+                    "error": "Mandatory field (bio) is missing."
+                });
+                return;
+            }
+
+            if (req.body.showCase === undefined) {
+
+                res.status(400);
+                res.json({
+                    "error": "Mandatory field (showCase) is missing."
+                });
+                return;
+            }
+
+            if (req.body.title === undefined || 
+                req.body.description === undefined || 
+                req.body.url === undefined) {
+    
+                res.status(400);
+                res.json({
+                    "error": "One or more mandatory fields (title, description, url) missing."
+                });
+                return;
+            }
+
+            
+            /* ............. end of error handling .............  */
+
+
 
             let result = await Freelancers.add(freelancerData);
 
@@ -110,7 +238,7 @@ async function main() {
     app.put('/freelancer/:id', async(req,res)=>{
         try {
             // req.body is an object that contains the data sent to the express endpoint
-            let updatedFreelancerData = req.body.data;
+            let updatedFreelancerData = req.body;
 
             let result = await Freelancers.update(req.params.id, updatedFreelancerData)
             res.status(200);
@@ -230,7 +358,7 @@ async function main() {
         }
 
         if (req.body.email !== undefined) {
-            newReviewData.reviewer.email = req.body.description
+            newReviewData.reviewer.email = req.body.email
         }
 
         let freelancerId = req.params.id;   // retrieve freelancer ID
