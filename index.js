@@ -79,11 +79,11 @@ async function main() {
     app.post('/freelancer', async (req, res) => {
         try {
 
-            if (req.body.type === undefined || 
-                req.body.specialized === undefined || 
-                req.body.rate === undefined || 
-                req.body.rateUnit === undefined ||
-                req.body.name === undefined) {
+            if (req.body.type === undefined || req.body.type.trim().length === 0 || 
+                req.body.specialized === undefined || !Array.isArray(req.body.specialized) || req.body.specialized.length === 0 || 
+                req.body.rate === undefined || req.body.rate.trim().length === 0 || 
+                req.body.rateUnit === undefined || req.body.rateUnit.trim().length === 0 ||
+                req.body.name === undefined || req.body.name.trim().length === 0) {
     
                 res.status(400);
                 res.json({
@@ -92,8 +92,23 @@ async function main() {
                 return;
             }
 
-            if (req.body.contact.email === undefined) {
+            if (Freelancers.isValidFreelancerType(req.body.type) === false) {
+                res.status(400);
+                res.json({
+                    "error": `Invalid freelancer type. Valid types are ${Freelancers.validFreelancerTypes.join(", ")}.`
+                });
+                return;
+            }
 
+            if (Freelancers.isValidSpecializations(req.body.specialized) === false) {
+                res.status(400);
+                res.json({
+                    "error": `Invalid specializations. Valid specializations are ${Freelancers.validSpecializations.join(", ")}.`
+                });
+                return;
+            }
+
+            if (req.body.contact.email === undefined || req.body.contact.email.trim().length === 0) {
                 res.status(400);
                 res.json({
                     "error": "Mandatory field (email) is missing."
@@ -101,8 +116,7 @@ async function main() {
                 return;
             }
 
-            if (req.body.bio === undefined) {
-
+            if (req.body.bio === undefined || req.body.bio.trim().length === 0) {
                 res.status(400);
                 res.json({
                     "error": "Mandatory field (bio) is missing."
@@ -110,8 +124,7 @@ async function main() {
                 return;
             }
 
-            if (req.body.showCase === undefined) {
-
+            if (req.body.showCase === undefined || req.body.showCase.trim().length === 0) {
                 res.status(400);
                 res.json({
                     "error": "Mandatory field (showCase) is missing."
@@ -131,43 +144,37 @@ async function main() {
                 },
                 "bio": req.body.bio,
                 "showCase": req.body.showCase,
-                "portfolios": [
-                    {
-                        "title": req.body.portfolios[0].title,
-                        "description": req.body.portfolios[0].description,
-                        "url": req.body.portfolios[0].url
-                    },
-                ]
+                "portfolios": []
             }
 
             /* ............. validation .............  */
 
-            if (req.body.profileImage === undefined) {
+            if (req.body.profileImage === undefined || req.body.profileImage.trim().length === 0) {
                 newFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
             } else {
                 newFreelancerData.profileImage = req.body.profileImage
             }
 
             // social media
-            if (req.body.socialMedia.facebook !== undefined) {
+            if (req.body.socialMedia.facebook !== undefined && req.body.socialMedia.facebook.trim().length > 0) {
                 newFreelancerData.socialMedia.facebook = req.body.socialMedia.facebook
             }
 
-            if (req.body.socialMedia.instagram !== undefined) {
+            if (req.body.socialMedia.instagram !== undefined && req.body.socialMedia.instagram.trim().length > 0) {
                 newFreelancerData.socialMedia.instagram = req.body.socialMedia.instagram
             }
 
-            if (req.body.socialMedia.tiktok !== undefined)  {
+            if (req.body.socialMedia.tiktok !== undefined && req.body.socialMedia.tiktok.trim().length > 0)  {
                 newFreelancerData.socialMedia.tiktok = req.body.socialMedia.tiktok
             }
 
             // contact 
 
-            if (req.body.contact.mobile !== undefined) {
+            if (req.body.contact.mobile !== undefined && req.body.contact.mobile.trim().length >0) {
                 newFreelancerData.contact.mobile = req.body.contact.mobile
             }
 
-            if (req.body.contact.website !== undefined) {
+            if (req.body.contact.website !== undefined && req.body.contact.website.trim().length > 0) {
                 newFreelancerData.contact.website = req.body.contact.website
             }
 
@@ -178,25 +185,30 @@ async function main() {
             if (Object.keys(newFreelancerData.socialMedia).length < 1)  {
                 res.status(400);
                 res.json({
-                "error": "Must provide atleast one (facebook, instagram, tiktok) field."
+                "error": "Must provide at least one (facebook, instagram, tiktok) field."
                 });
                 return;       
             }
 
-            
-
-            // to check again on how to pass the data and perform validation 
-            if (req.body.portfolios[0].title === undefined || 
-                req.body.portfolios[0].description === undefined || 
-                req.body.portfolios[0].url === undefined) {
-    
+            // ref: https://stackoverflow.com/a/49718056
+            let isOk = true;
+            req.body.portfolios.some( (portfolio) => {
+                if (portfolio.title !== undefined && portfolio.title.trim().length > 0 && 
+                    portfolio.description !== undefined || portfolio.description.trim().length > 0 &&
+                    portfolio.url !== undefined || portfolio.url.trim().length > 0) {
+                    
+                    newFreelancerData.portfolios.push(portfolio);
+                    
+                }
+            })
+            if (newFreelancerData.portfolios.length === 0) {
                 res.status(400);
                 res.json({
-                    "error": "One or more mandatory fields (title, description, url) missing."
+                    "error": "Must provide at least one portfolio"
                 });
                 return;
             }
-
+            
             
             /* ............. end of error handling .............  */
 
@@ -209,7 +221,8 @@ async function main() {
                 res.status(201);
                 res.send({
                     "success": true,
-                    "message": "New freelancer profile added successfully"
+                    "message": "New freelancer profile added successfully",
+                    "freelancerId": result.insertedId
                 })
                 return
                 /*

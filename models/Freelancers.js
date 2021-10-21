@@ -11,6 +11,20 @@ let dbName = process.env.MONGO_DBNAME;
 let collectionName = "freelancers";
 
 
+const validFreelancerTypes = [
+    "makeup-artist", "photographer", "videographer"
+]
+
+const validSpecializations = [
+    "bridal makeup",
+    "fancy makeup",
+    "natural glow makeup",
+    "pre-wedding",
+    "photography",
+    "videography",
+    "Wedding day /ROM"
+]
+
 // get all freelancers from DB
 async function get(query, projection) {
 
@@ -147,6 +161,21 @@ async function remove(freelancerId) {
     }
 }
 
+function isValidFreelancerType(typeOfFreelancer) {
+    return validFreelancerTypes.indexOf(typeOfFreelancer) >= 0;
+}
+
+function isValidSpecializations(specializations) {
+    specializations.map( specialization => {
+        if (validSpecializations.indexOf(specialization) < 0) {
+            return false
+        }
+    })
+    return true;
+}
+
 module.exports = {
-    add, get, getById, remove, update
+    add, get, getById, remove, update,
+    isValidFreelancerType, isValidSpecializations,
+    validFreelancerTypes, validSpecializations
 }
