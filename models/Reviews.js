@@ -18,6 +18,7 @@ async function getByFreelancerId(freelancerId) {
             "for": ObjectId(freelancerId)
         }, {
             "projection": {
+                "date": 1,
                 "for": 1,
                 "rating": 1,
                 "reviewer.name": 1,

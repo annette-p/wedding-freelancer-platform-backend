@@ -357,7 +357,7 @@ async function main() {
 
         let newReviewData = {
             "reviewer": {
-                "name": req.body.name
+                "name": req.body.reviewerName
             },
             "description": req.body.description,
             "rating": parseInt(req.body.rating),
