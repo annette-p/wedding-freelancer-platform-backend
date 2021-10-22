@@ -79,6 +79,8 @@ async function main() {
     app.post('/freelancer', async (req, res) => {
         try {
 
+            /* ............. validation .............  */
+
             if (req.body.type === undefined || req.body.type.trim().length === 0 || 
                 req.body.specialized === undefined || !Array.isArray(req.body.specialized) || req.body.specialized.length === 0 || 
                 req.body.rate === undefined || req.body.rate.trim().length === 0 || 
@@ -132,6 +134,8 @@ async function main() {
                 return;
             }
 
+            /* ............. form processing .............  */
+
             let newFreelancerData = {
                 "type": req.body.type,
                 "specialized": req.body.specialized,
@@ -147,13 +151,22 @@ async function main() {
                 "portfolios": []
             }
 
-            /* ............. validation .............  */
+            // Login details
+            if (req.body.username !== undefined && req.body.username.trim().length > 0 &&
+                req.body.password !== undefined && req.body.password.trim().length > 0) {
+                newFreelancerData.username = req.body.username
+                newFreelancerData.password = req.body.password
+            }
+
+
+            // profile image
 
             if (req.body.profileImage === undefined || req.body.profileImage.trim().length === 0) {
                 newFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
             } else {
                 newFreelancerData.profileImage = req.body.profileImage
             }
+
 
             // social media
             if (req.body.socialMedia.facebook !== undefined && req.body.socialMedia.facebook.trim().length > 0) {
@@ -211,7 +224,6 @@ async function main() {
             
             
             /* ............. end of error handling .............  */
-
 
 
             let result = await Freelancers.add(newFreelancerData);
