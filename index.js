@@ -12,7 +12,27 @@ app.use(express.json());
 // enable CORS
 app.use(cors());
 
+// Ref: https://stackoverflow.com/a/51629852
+app.use(function (error, req, res, next) {
+    // Handle SyntaxError
+    if (error instanceof SyntaxError) { 
+        return res.status(error.statusCode).send({"error" : "Invalid data"});
+    } else {
+        next();
+    }
+});
+
 async function main() {
+
+    errorHandling = (err, res) => {
+        const statusCode = err.statusCode === undefined ? 500 : err.statusCode
+        const errorMessage = err.message === undefined ? "We have encountered an interal server error. Please contact admin" : err.message
+        res.status(statusCode);
+        res.json({
+            'error': errorMessage
+        });
+        console.error(err);
+    }
 
     /* ........................................ Freelancer dataset collection ................................. */
 
@@ -52,11 +72,7 @@ async function main() {
             res.status(200);
             res.send(result);
         } catch (e) {
-            res.status(500);
-            res.send({
-                'error':"We have encountered an internal server error"
-            })
-            console.error(e);      
+            errorHandling(e, res);     
         }
     })
 
@@ -67,11 +83,7 @@ async function main() {
             res.status(200);
             res.send(result)
         } catch (e) {
-            res.status(500);
-            res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
     })
 
@@ -81,11 +93,11 @@ async function main() {
 
             /* ............. validation .............  */
 
-            if (req.body.type === undefined || req.body.type.trim().length === 0 || 
-                req.body.specialized === undefined || !Array.isArray(req.body.specialized) || req.body.specialized.length === 0 || 
-                req.body.rate === undefined || req.body.rate.trim().length === 0 || 
-                req.body.rateUnit === undefined || req.body.rateUnit.trim().length === 0 ||
-                req.body.name === undefined || req.body.name.trim().length === 0) {
+            if (!req.body.type || req.body.type.trim().length === 0 || 
+                !req.body.rate || req.body.rate.trim().length === 0 || 
+                !req.body.rateUnit || req.body.rateUnit.trim().length === 0 || 
+                !req.body.name || req.body.name.trim().length === 0 ||
+                !req.body.specialized || !Array.isArray(req.body.specialized) || req.body.specialized.length === 0) {
     
                 res.status(400);
                 res.json({
@@ -110,7 +122,23 @@ async function main() {
                 return;
             }
 
-            if (req.body.contact.email === undefined || req.body.contact.email.trim().length === 0) {
+            if (req.body.specialized.length > 3) {
+                res.status(400);
+                res.json({
+                    "error": "Only maximum 3 specializations permitted"
+                });
+                return;
+            }
+
+            if (isNaN(req.body.rate)) {
+                res.status(400);
+                res.json({
+                    "error": "'rate' should be numeric"
+                });
+                return;
+            }
+
+            if (!req.body.contact.email || req.body.contact.email.trim().length === 0) {
                 res.status(400);
                 res.json({
                     "error": "Mandatory field (email) is missing."
@@ -118,7 +146,7 @@ async function main() {
                 return;
             }
 
-            if (req.body.bio === undefined || req.body.bio.trim().length === 0) {
+            if (!req.body.bio || req.body.bio.trim().length === 0) {
                 res.status(400);
                 res.json({
                     "error": "Mandatory field (bio) is missing."
@@ -126,7 +154,7 @@ async function main() {
                 return;
             }
 
-            if (req.body.showCase === undefined || req.body.showCase.trim().length === 0) {
+            if (!req.body.showCase || req.body.showCase.trim().length === 0) {
                 res.status(400);
                 res.json({
                     "error": "Mandatory field (showCase) is missing."
@@ -152,42 +180,40 @@ async function main() {
             }
 
             // Login details
-            if (req.body.username !== undefined && req.body.username.trim().length > 0 &&
-                req.body.password !== undefined && req.body.password.trim().length > 0) {
+            if (req.body.username && req.body.username.trim().length > 0 &&
+                req.body.password && req.body.password.trim().length > 0) {
                 newFreelancerData.username = req.body.username
                 newFreelancerData.password = req.body.password
             }
 
-
             // profile image
-
-            if (req.body.profileImage === undefined || req.body.profileImage.trim().length === 0) {
+            if (!req.body.profileImage || eq.body.profileImage.trim().length === 0) {
                 newFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
             } else {
                 newFreelancerData.profileImage = req.body.profileImage
             }
 
-
             // social media
-            if (req.body.socialMedia.facebook !== undefined && req.body.socialMedia.facebook.trim().length > 0) {
+
+            if (req.body.socialMedia.facebook && req.body.socialMedia.facebook.trim().length > 0) {
                 newFreelancerData.socialMedia.facebook = req.body.socialMedia.facebook
             }
 
-            if (req.body.socialMedia.instagram !== undefined && req.body.socialMedia.instagram.trim().length > 0) {
+            if (req.body.socialMedia.instagram && req.body.socialMedia.instagram.trim().length > 0) {
                 newFreelancerData.socialMedia.instagram = req.body.socialMedia.instagram
             }
 
-            if (req.body.socialMedia.tiktok !== undefined && req.body.socialMedia.tiktok.trim().length > 0)  {
+            if (req.body.socialMedia.tiktok && req.body.socialMedia.tiktok.trim().length > 0)  {
                 newFreelancerData.socialMedia.tiktok = req.body.socialMedia.tiktok
             }
 
             // contact 
-
-            if (req.body.contact.mobile !== undefined && req.body.contact.mobile.trim().length >0) {
+            
+            if (req.body.contact.mobile && req.body.contact.mobile.trim().length >0) {
                 newFreelancerData.contact.mobile = req.body.contact.mobile
             }
 
-            if (req.body.contact.website !== undefined && req.body.contact.website.trim().length > 0) {
+            if (req.body.contact.website && req.body.contact.website.trim().length > 0) {
                 newFreelancerData.contact.website = req.body.contact.website
             }
 
@@ -206,9 +232,9 @@ async function main() {
             // ref: https://stackoverflow.com/a/49718056
             let isOk = true;
             req.body.portfolios.some( (portfolio) => {
-                if (portfolio.title !== undefined && portfolio.title.trim().length > 0 && 
-                    portfolio.description !== undefined || portfolio.description.trim().length > 0 &&
-                    portfolio.url !== undefined || portfolio.url.trim().length > 0) {
+                if (portfolio.title && portfolio.title.trim().length > 0 && 
+                    portfolio.description && portfolio.description.trim().length > 0 &&
+                    portfolio.url && portfolio.url.trim().length > 0) {
                     
                     newFreelancerData.portfolios.push(portfolio);
                     
@@ -257,11 +283,7 @@ async function main() {
             }
             */
         } catch (e) {
-            res.status(500);
-            res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
     })
 
@@ -285,11 +307,7 @@ async function main() {
                 }
             */
         } catch (e) {
-            res.status(500);
-            res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
     })
 
@@ -307,11 +325,7 @@ async function main() {
                 }
             */
         } catch (e) {
-            res.status(500);
-            res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
     })
 
@@ -325,11 +339,7 @@ async function main() {
             res.status(200);
             res.send(result)
         } catch (e) {
-            res.status(500);
-            res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
     })
 
@@ -351,10 +361,10 @@ async function main() {
             }
         */
 
-        if (req.body.reviewerName === undefined || 
-            req.body.rating === undefined || 
-            req.body.recommend === undefined || 
-            req.body.description === undefined) {
+        if (!req.body.reviewerName || eq.body.reviewerName.trim().length === 0 || 
+            !req.body.rating || req.body.rating.trim().length === 0 || 
+            !req.body.recommend || req.body.recommend.trim().length === 0 || 
+            !req.body.description || req.body.description.trim().length === 0) {
 
             res.status(400);
             res.json({
@@ -389,7 +399,7 @@ async function main() {
             "recommend": req.body.recommend === "true",
         }
 
-        if (req.body.email !== undefined) {
+        if (req.body.email && req.body.email.trim().length > 0) {
             newReviewData.reviewer.email = req.body.email
         }
 
@@ -421,13 +431,7 @@ async function main() {
             }
 
         } catch (e) {
-            const statusCode = e.statusCode === undefined ? 500 : e.statusCode
-            const errorMessage = e.message === undefined ? "We have encountered an interal server error. Please contact admin" : e.message
-            res.status(statusCode);
-            res.json({
-                'error': errorMessage
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
     })
 
@@ -464,7 +468,8 @@ async function main() {
             const username = req.body.username;
             const password = req.body.password;
 
-            if (username === undefined || password === undefined) {
+            if (!username || username.trim().length === 0 || 
+                !password || password.trim().length === 0) {
                 res.status(400);
                 res.json({
                     "error": "Missing username and/or password"
@@ -508,11 +513,7 @@ async function main() {
             });
 
         } catch (e) {
-            res.status(500);
-            res.json({
-                'error': "We have encountered an interal server error. Please contact admin"
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
     })
 
@@ -522,7 +523,9 @@ async function main() {
         let currentPassword = req.body.currentPassword;
         let newPassword = req.body.newPassword;
 
-        if (username === undefined || currentPassword === undefined || newPassword === undefined) {
+        if (!username || username.trim().length === 0 ||
+            !currentPassword || currentPassword.trim().length === 0 ||
+            !newPassword || newPassword.trim().length === 0) {
             res.status(400);
             res.json({
                 "error": "Missing username, current password and/or new password"
@@ -547,14 +550,16 @@ async function main() {
                 return;
             }
         } catch (e) {
-            const statusCode = e.statusCode === undefined ? 500 : e.statusCode
-            const errorMessage = e.message === undefined ? "We have encountered an interal server error. Please contact admin" : e.message
-            res.status(statusCode);
-            res.json({
-                'error': errorMessage
-            });
-            console.error(e);
+            errorHandling(e, res);
         }
+    })
+
+    // this matches all routes and all methods
+    app.use((req, res, next) => {
+        res.status(404).send({
+            status: 404,
+            error: "Not found"
+        })
     })
 
 }
