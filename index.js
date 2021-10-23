@@ -472,13 +472,13 @@ async function main() {
                 return;
             }
 
-            let result = await Logins.verify(username, password);
+            let loginResult = await Logins.verify(username, password);
             // check in logins collection DB if the username/password exist using verify function
-            if (result !== null) {
+            if (loginResult !== null) {
                 // take that _id in logins collection DB, look into freelancer collection DB to find the freelancer that hold that login _id (under "login" key)
-                let result2 = await Freelancers.get(
+                let authenticatedFreelance = await Freelancers.get(
                     {
-                        "login": result._id
+                        "login": loginResult._id
                     },
                     {
                         "projection": {
@@ -489,12 +489,12 @@ async function main() {
                 )
 
                 // verify if there's freelancer with this login provided (able to find in freelancer collection DB)
-                if (result2 !== null) {
+                if (authenticatedFreelance !== null) {
                     // inform the user that the process is successful
                     res.status(200);
                     res.json({
                         "success": true,
-                        "freelancer": result2
+                        "freelancer": authenticatedFreelance
                     });
                     return;
                 } 
