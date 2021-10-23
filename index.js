@@ -372,7 +372,7 @@ async function main() {
             return;
         }
         
-        if (isNaN(req.body.rating) || parseInt(req.body.rating) < 0 || parseInt(req.body.rating) > 5) {
+        if (isNaN(req.body.rating) || parseInt(req.body.rating) < 1 || parseInt(req.body.rating) > 5) {
             res.status(400);
             res.json({
                 "error": "'rating' should be numeric, between 1 to 5"
