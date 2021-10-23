@@ -364,7 +364,7 @@ async function main() {
 
         }
 
-        if (typeof req.body.recommend !== "boolean") {
+        if (req.body.recommend !== "true" && req.body.recommend !== "false") {
             res.status(400);
             res.json({
                 "error": "'recommend' should be a boolean (i.e. true or false)"
@@ -386,7 +386,7 @@ async function main() {
             },
             "description": req.body.description,
             "rating": parseInt(req.body.rating),
-            "recommend": req.body.recommend,
+            "recommend": req.body.recommend === "true",
         }
 
         if (req.body.email !== undefined) {
