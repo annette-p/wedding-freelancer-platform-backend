@@ -187,7 +187,7 @@ async function main() {
             }
 
             // profile image
-            if (!req.body.profileImage || eq.body.profileImage.trim().length === 0) {
+            if (!req.body.profileImage || req.body.profileImage.trim().length === 0) {
                 newFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
             } else {
                 newFreelancerData.profileImage = req.body.profileImage
@@ -289,23 +289,210 @@ async function main() {
 
     // edit & update freelancer
     app.put('/freelancer/:id', async(req,res)=>{
-        try {
-            // req.body is an object that contains the data sent to the express endpoint
-            let updatedFreelancerData = req.body;
 
-            let result = await Freelancers.update(req.params.id, updatedFreelancerData)
-            res.status(200);
-            res.send(result)
-            /*
-            the update test result: 
-                {
-                    "acknowledged": true,
-                    "modifiedCount": 1,
-                    "upsertedId": null,
-                    "upsertedCount": 0,
-                    "matchedCount": 1
-                }
-            */
+        /* ............. validation .............  */
+
+        if (!req.body.type || req.body.type.trim().length === 0 || 
+            !req.body.rate || req.body.rate.trim().length === 0 || 
+            !req.body.rateUnit || req.body.rateUnit.trim().length === 0 || 
+            !req.body.name || req.body.name.trim().length === 0 ||
+            !req.body.specialized || !Array.isArray(req.body.specialized) || req.body.specialized.length === 0) {
+
+            res.status(400);
+            res.json({
+                "error": "One or more mandatory fields (Name, Type, Specialized, Rate, RateUnit) missing."
+            });
+            return;
+        }
+
+        if (Freelancers.isValidFreelancerType(req.body.type) === false) {
+            res.status(400);
+            res.json({
+                "error": `Invalid freelancer type. Valid types are ${Freelancers.validFreelancerTypes.join(", ")}.`
+            });
+            return;
+        }
+
+        if (Freelancers.isValidSpecializations(req.body.specialized) === false) {
+            res.status(400);
+            res.json({
+                "error": `Invalid specializations. Valid specializations are ${Freelancers.validSpecializations.join(", ")}.`
+            });
+            return;
+        }
+
+        if (req.body.specialized.length > 3) {
+            res.status(400);
+            res.json({
+                "error": "Only maximum 3 specializations permitted"
+            });
+            return;
+        }
+
+        if (isNaN(req.body.rate)) {
+            res.status(400);
+            res.json({
+                "error": "'rate' should be numeric"
+            });
+            return;
+        }
+
+        if (!req.body.contact.email || req.body.contact.email.trim().length === 0) {
+            res.status(400);
+            res.json({
+                "error": "Mandatory field (email) is missing."
+            });
+            return;
+        }
+
+        if (!req.body.bio || req.body.bio.trim().length === 0) {
+            res.status(400);
+            res.json({
+                "error": "Mandatory field (bio) is missing."
+            });
+            return;
+        }
+
+        if (!req.body.showCase || req.body.showCase.trim().length === 0) {
+            res.status(400);
+            res.json({
+                "error": "Mandatory field (showCase) is missing."
+            });
+            return;
+        }
+
+        /* ............. form processing .............  */
+
+        let updatedFreelancerData = {
+            "type": req.body.type,
+            "specialized": req.body.specialized,
+            "rate": parseInt(req.body.rate),
+            "rateUnit": req.body.rateUnit,
+            "name": req.body.name,
+            "socialMedia": {},
+            "contact": {
+                "email": req.body.contact.email
+            },
+            "bio": req.body.bio,
+            "showCase": req.body.showCase,
+            "portfolios": []
+        }
+
+        // profile image
+        if (!req.body.profileImage || req.body.profileImage.trim().length === 0) {
+            updatedFreelancerData.profileImage = "https://images.unsplash.com/photo-1529335764857-3f1164d1cb24"
+        } else {
+            updatedFreelancerData.profileImage = req.body.profileImage
+        }
+
+        // social media
+
+        if (req.body.socialMedia.facebook && req.body.socialMedia.facebook.trim().length > 0) {
+            updatedFreelancerData.socialMedia.facebook = req.body.socialMedia.facebook
+        }
+
+        if (req.body.socialMedia.instagram && req.body.socialMedia.instagram.trim().length > 0) {
+            updatedFreelancerData.socialMedia.instagram = req.body.socialMedia.instagram
+        }
+
+        if (req.body.socialMedia.tiktok && req.body.socialMedia.tiktok.trim().length > 0)  {
+            updatedFreelancerData.socialMedia.tiktok = req.body.socialMedia.tiktok
+        }
+
+        // contact 
+        
+        if (req.body.contact.mobile && req.body.contact.mobile.trim().length >0) {
+            updatedFreelancerData.contact.mobile = req.body.contact.mobile
+        }
+
+        if (req.body.contact.website && req.body.contact.website.trim().length > 0) {
+            updatedFreelancerData.contact.website = req.body.contact.website
+        }
+
+        /* ............. error handling .............  */
+
+        // must be atleast 1 social media provide
+        // Object.keys return an arrays of key in the object
+        if (Object.keys(updatedFreelancerData.socialMedia).length < 1)  {
+            res.status(400);
+            res.json({
+            "error": "Must provide at least one (facebook, instagram, tiktok) field."
+            });
+            return;       
+        }
+
+        // ref: https://stackoverflow.com/a/49718056
+        let isOk = true;
+        req.body.portfolios.some( (portfolio) => {
+            if (portfolio.title && portfolio.title.trim().length > 0 && 
+                portfolio.description && portfolio.description.trim().length > 0 &&
+                portfolio.url && portfolio.url.trim().length > 0) {
+                
+                    updatedFreelancerData.portfolios.push(portfolio);
+                
+            }
+        })
+        if (updatedFreelancerData.portfolios.length === 0) {
+            res.status(400);
+            res.json({
+                "error": "Must provide at least one portfolio"
+            });
+            return;
+        }
+        
+        try {
+            let result = await Freelancers.update(req.params.id, updatedFreelancerData);
+
+            if (result !== null && result.matchedCount === 1) {
+                // inform the user that the process is successful
+                let msg = result.modifiedCount === 0 ? "No changes required for Freelancer profile" : "Freelancer profile updated"
+                res.status(200);
+                res.send({
+                    "success": true,
+                    "message": msg,
+                    "freelancerId": req.params.id
+                })
+                return
+                /*
+                    -> SUCCESS no modification
+
+                    {
+                        "acknowledged": true,
+                        "modifiedCount": 0,
+                        "upsertedId": null,
+                        "upsertedCount": 0,
+                        "matchedCount": 1
+                    }
+
+                    -> SUCCESS with modification
+
+                    {
+                        "acknowledged": true,
+                        "modifiedCount": 1,
+                        "upsertedId": null,
+                        "upsertedCount": 0,
+                        "matchedCount": 1
+                    }
+                */
+            } else {
+                res.status(400);
+                res.json({
+                    "error": "Unsuccessful update. Unable to locate freelancer profile."
+                });
+                return;
+
+                /*
+                    -> Unable to find the freelancer record in DB
+
+                    {
+                        "acknowledged": true,
+                        "modifiedCount": 0,
+                        "upsertedId": null,
+                        "upsertedCount": 0,
+                        "matchedCount": 0
+                    }
+                */
+            }
         } catch (e) {
             errorHandling(e, res);
         }
@@ -554,7 +741,8 @@ async function main() {
         }
     })
 
-    // this matches all routes and all methods
+    // this matches all routes and all methods  
+    // https://levelup.gitconnected.com/how-to-handle-errors-in-an-express-and-node-js-app-cb4fe2907ed9
     app.use((req, res, next) => {
         res.status(404).send({
             status: 404,
