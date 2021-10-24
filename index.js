@@ -686,7 +686,7 @@ async function main() {
                     res.status(200);
                     res.json({
                         "success": true,
-                        "freelancer": authenticatedFreelance
+                        "freelancer": authenticatedFreelance[0]
                     });
                     return;
                 } 
