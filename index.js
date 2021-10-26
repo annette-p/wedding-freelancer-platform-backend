@@ -1,8 +1,16 @@
 const express = require("express");
 const cors = require("cors");
+const MongoUtil = require("./models/MongoUtil");
 const Freelancers = require("./models/Freelancers");
 const Logins = require("./models/Logins");
 const Reviews = require("./models/Reviews");
+
+// read from .env file
+require('dotenv').config();
+
+// Retrieve the MongoDB url and DB name from environment variable, defined in .env file
+let mongoUrl = process.env.MONGO_URL;
+let dbName = process.env.MONGO_DBNAME;
 
 let app = express();
 
@@ -23,6 +31,9 @@ app.use(function (error, req, res, next) {
 });
 
 async function main() {
+
+    // connect to the MongoDB, and save the reference in "db" variable
+    let db = await MongoUtil.connect(mongoUrl, dbName);
 
     errorHandling = (err, res) => {
         const statusCode = err.statusCode === undefined ? 500 : err.statusCode
@@ -67,7 +78,7 @@ async function main() {
 
             // ** END OF NOT IMPLEMENTED **
 
-            let result = await Freelancers.get(criteria, projection);
+            let result = await Freelancers.get(db, criteria, projection);
 
             res.status(200);
             res.send(result);
@@ -79,7 +90,7 @@ async function main() {
     // get freelancer by id
     app.get('/freelancer/:id', async(req,res)=>{
         try {
-            let result = await Freelancers.getById(req.params.id)
+            let result = await Freelancers.getById(db, req.params.id)
             res.status(200);
             res.send(result)
         } catch (e) {
@@ -252,7 +263,7 @@ async function main() {
             /* ............. end of error handling .............  */
 
 
-            let result = await Freelancers.add(newFreelancerData);
+            let result = await Freelancers.add(db, newFreelancerData);
 
             if (result !== null) {
                 // inform the user that the process is successful
@@ -441,7 +452,7 @@ async function main() {
         }
         
         try {
-            let result = await Freelancers.update(req.params.id, updatedFreelancerData);
+            let result = await Freelancers.update(db, req.params.id, updatedFreelancerData);
 
             if (result !== null && result.matchedCount === 1) {
                 // inform the user that the process is successful
@@ -501,7 +512,7 @@ async function main() {
     // delete freelancer
     app.delete('/freelancer/:id', async(req,res) => {
         try {
-            let results = await Freelancers.remove(req.params.id)
+            let results = await Freelancers.remove(db, req.params.id)
             res.status(200);
             res.send(results);
             /*
@@ -522,7 +533,7 @@ async function main() {
     // get all reviews for a freelancer by freelancer ID
     app.get('/freelancer/:id/reviews', async (req, res) => {
         try {
-            let result = await Reviews.getByFreelancerId(req.params.id)
+            let result = await Reviews.getByFreelancerId(db, req.params.id)
             res.status(200);
             res.send(result)
         } catch (e) {
@@ -548,7 +559,7 @@ async function main() {
             }
         */
 
-        if (!req.body.reviewerName || eq.body.reviewerName.trim().length === 0 || 
+        if (!req.body.reviewerName || req.body.reviewerName.trim().length === 0 || 
             !req.body.rating || req.body.rating.trim().length === 0 || 
             !req.body.recommend || req.body.recommend.trim().length === 0 || 
             !req.body.description || req.body.description.trim().length === 0) {
@@ -593,7 +604,7 @@ async function main() {
         let freelancerId = req.params.id;   // retrieve freelancer ID
 
         try {
-            let result = await Reviews.addReview(freelancerId, newReviewData);
+            let result = await Reviews.addReview(db, freelancerId, newReviewData);
 
             if (result !== null) {
                 // inform the user that the process is successful
@@ -664,11 +675,11 @@ async function main() {
                 return;
             }
 
-            let loginResult = await Logins.verify(username, password);
+            let loginResult = await Logins.verify(db, username, password);
             // check in logins collection DB if the username/password exist using verify function
             if (loginResult !== null) {
                 // take that _id in logins collection DB, look into freelancer collection DB to find the freelancer that hold that login _id (under "login" key)
-                let authenticatedFreelance = await Freelancers.get(
+                let authenticatedFreelance = await Freelancers.get(db, 
                     {
                         "login": loginResult._id
                     },
@@ -721,7 +732,7 @@ async function main() {
         }
 
         try {
-            let result = await Logins.changePassword(username, currentPassword, newPassword)
+            let result = await Logins.changePassword(db, username, currentPassword, newPassword)
             if (result.matchedCount === 1 && result.modifiedCount === 1) {
                 res.status(200);
                 res.send({

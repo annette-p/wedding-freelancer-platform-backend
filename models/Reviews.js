@@ -1,19 +1,12 @@
 const MongoUtil = require("./MongoUtil");
 const ObjectId = require("mongodb").ObjectId;
 
-// read from .env file
-require('dotenv').config();
-
-// Retrieve the MongoDB url and DB name from environment variable, defined in .env file
-let mongoUrl = process.env.MONGO_URL;
-let dbName = process.env.MONGO_DBNAME;
 let collectionName = "reviews";
 
 // get all reviews for respective freelancer from DB
-async function getByFreelancerId(freelancerId) {
+async function getByFreelancerId(db, freelancerId) {
 
     try {
-        let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).find({
             "for": ObjectId(freelancerId)
         }, {
@@ -30,7 +23,7 @@ async function getByFreelancerId(freelancerId) {
     } catch(e) {
         errorMsg = `
         Error encountered when querying from DB.
-        DB: ${dbName}, Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
+        Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
         `
         console.error(errorMsg)
         throw new MongoUtil.DBError(errorMsg);
@@ -39,7 +32,7 @@ async function getByFreelancerId(freelancerId) {
 
 
 // add new review & comment to respective freelancer profile
-async function addReview(freelancerId, newReview) {
+async function addReview(db, freelancerId, newReview) {
 
     // to add a new "for" key with value as freelancer ID (tagging this new review to existing selected freelancer ID)
     newReview["for"] = ObjectId(freelancerId)
@@ -47,13 +40,13 @@ async function addReview(freelancerId, newReview) {
     newReview["reviewer"]["tag"] = "anonymous";
 
     try {
-        let db = await MongoUtil.connect(mongoUrl, dbName);
+        // let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).insertOne(newReview);
         return result
     } catch(e) {
         errorMsg = `
         Error encountered when inserting data into DB.
-        DB: ${dbName}, Collection: ${collectionName}, Error: ${e}
+        Collection: ${collectionName}, Error: ${e}
         `
         console.error(errorMsg)
         throw new MongoUtil.DBError(errorMsg);
@@ -61,9 +54,9 @@ async function addReview(freelancerId, newReview) {
 }
 
 // remove review & comment to respective freelancer profile
-async function removeReview(reviewId) {
+async function removeReview(db, reviewId) {
     try {
-        let db = await MongoUtil.connect(mongoUrl, dbName);
+        // let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).deleteOne({
             '_id': ObjectId(reviewId)
         });
@@ -71,7 +64,7 @@ async function removeReview(reviewId) {
     } catch(e) {
         errorMsg = `
         Error encountered when removing data from DB.
-        DB: ${dbName}, Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
+        Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
         `
         console.error(errorMsg)
         throw new MongoUtil.DBError(errorMsg);

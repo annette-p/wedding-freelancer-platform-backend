@@ -2,19 +2,18 @@ const MongoUtil = require("./MongoUtil");
 const ObjectId = require("mongodb").ObjectId;
 const bcrypt = require('bcryptjs');
 
-// read from .env file
-require('dotenv').config();
+// // read from .env file
+// require('dotenv').config();
 
-// Retrieve the MongoDB url and DB name from environment variable, defined in .env file
-let mongoUrl = process.env.MONGO_URL;
-let dbName = process.env.MONGO_DBNAME;
+// // Retrieve the MongoDB url and DB name from environment variable, defined in .env file
+// let mongoUrl = process.env.MONGO_URL;
+// let dbName = process.env.MONGO_DBNAME;
 let collectionName = "logins";
 
 // to get login by user name (includePassword=false is an optional argument)
-async function getByUsername(username, includePassword=false) {
+async function getByUsername(db, username, includePassword=false) {
 
     try {
-        let db = await MongoUtil.connect(mongoUrl, dbName);
         let findOption = {
             // to set default projection
             "projection": {
@@ -32,7 +31,7 @@ async function getByUsername(username, includePassword=false) {
     } catch(e) {
         errorMsg = `
         Error encountered when querying from DB.
-        DB: ${dbName}, Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
+        Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
         `;
         console.error(errorMsg);
         throw errorMsg;
@@ -40,7 +39,7 @@ async function getByUsername(username, includePassword=false) {
 }
 
 // new registration
-async function register(username, password) {
+async function register(db, username, password) {
 
     // check whether user exists
     let existingUser = await getByUsername(username);
@@ -56,13 +55,12 @@ async function register(username, password) {
         password: encryptedPassword
     }
     try {
-        let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).insertOne(newLogin);
         return result;
     } catch(e) {
         errorMsg = `
         Error encountered when inserting registration data into DB.
-        DB: ${dbName}, Collection: ${collectionName}, Error: ${e}
+        Collection: ${collectionName}, Error: ${e}
         `;
         console.error(errorMsg);
         throw errorMsg;
@@ -70,9 +68,9 @@ async function register(username, password) {
 }
 
 // verify the credentials
-async function verify(username, password) {
+async function verify(db, username, password) {
     // this time pass 2 arguments which is including password as true)
-    let user = await getByUsername(username, true);
+    let user = await getByUsername(db, username, true);
     // compare password provided by user with the one in DB
     if (user !== null && await bcrypt.compare(password, user.password) === true) {
         // remove the encrypted password that was retrieved from DB
@@ -84,10 +82,10 @@ async function verify(username, password) {
 }
 
 // change password
-async function changePassword(username, currentPassword, newPassword) {
+async function changePassword(db, username, currentPassword, newPassword) {
 
     // check whether username and current password is correct
-    let user = await verify(username, currentPassword);
+    let user = await verify(db, username, currentPassword);
     if (user === null) {
         throw new LoginError(`Unable to change password. Username ${username} does not exists or current password incorrect`);
     }
@@ -96,7 +94,6 @@ async function changePassword(username, currentPassword, newPassword) {
     let salt = await bcrypt.genSalt(10);
     let newEncryptedPassword = await bcrypt.hash(newPassword, salt);
     try {
-        let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).updateOne({
             '_id': user._id
         },{
@@ -108,16 +105,15 @@ async function changePassword(username, currentPassword, newPassword) {
     } catch(e) {
         errorMsg = `
         Error encountered when updating registration data in DB.
-        DB: ${dbName}, Collection: ${collectionName}, Login Id: ${user._id.str}, Username: ${username}, Error: ${e}
+        Collection: ${collectionName}, Login Id: ${user._id.str}, Username: ${username}, Error: ${e}
         `;
         console.error(errorMsg);
         throw new MongoUtil.DBError(errorMsg);
     }
 }
 
-async function remove(id) {
+async function remove(db, id) {
     try {
-        let db = await MongoUtil.connect(mongoUrl, dbName);
         let result = await db.collection(collectionName).deleteOne({
             '_id': ObjectId(id)
         });
@@ -125,7 +121,7 @@ async function remove(id) {
     } catch(e) {
         errorMsg = `
         Error encountered when removing registration data from DB.
-        DB: ${dbName}, Collection: ${collectionName}, Login Id: ${user._id.str}, Username: ${username}, Error: ${e}
+        Collection: ${collectionName}, Login Id: ${user._id.str}, Username: ${username}, Error: ${e}
         `;
         console.error(errorMsg);
         throw errorMsg;
