@@ -71,6 +71,24 @@ async function removeReview(db, reviewId) {
     }
 }
 
+// remove review & comment for a freelancer
+async function removeReviewForFreelancer(db, freelancerId) {
+    try {
+        // let db = await MongoUtil.connect(mongoUrl, dbName);
+        let result = await db.collection(collectionName).deleteMany({
+            'for': ObjectId(freelancerId)
+        });
+        return result
+    } catch(e) {
+        errorMsg = `
+        Error encountered when removing data from DB.
+        Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
+        `
+        console.error(errorMsg)
+        throw new MongoUtil.DBError(errorMsg);
+    }
+}
+
 // https://stackify.com/node-js-error-handling/
 class ReviewError extends Error {
     constructor(args) {
@@ -81,5 +99,5 @@ class ReviewError extends Error {
 }
 
 module.exports = {
-    addReview, getByFreelancerId, removeReview, ReviewError
+    addReview, getByFreelancerId, removeReview, removeReviewForFreelancer, ReviewError
 }

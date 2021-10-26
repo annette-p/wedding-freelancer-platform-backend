@@ -10,6 +10,30 @@ const bcrypt = require('bcryptjs');
 // let dbName = process.env.MONGO_DBNAME;
 let collectionName = "logins";
 
+// to get username by id, exclude password
+async function getUsernameById(db, id) {
+    try {
+        let findOption = {
+            // to set default projection
+            "projection": {
+                "username": 1
+            }
+        }
+
+        let result = await db.collection(collectionName).findOne({
+            '_id': ObjectId(id)
+        }, findOption);
+        return result;
+    } catch(e) {
+        errorMsg = `
+        Error encountered when querying from DB.
+        Collection: ${collectionName}, Login Uid: ${id}, Error: ${e}
+        `;
+        console.error(errorMsg);
+        throw errorMsg;
+    }
+}
+
 // to get login by user name (includePassword=false is an optional argument)
 async function getByUsername(db, username, includePassword=false) {
 
@@ -31,7 +55,7 @@ async function getByUsername(db, username, includePassword=false) {
     } catch(e) {
         errorMsg = `
         Error encountered when querying from DB.
-        Collection: ${collectionName}, Freelancer Id: ${freelancerId}, Error: ${e}
+        Collection: ${collectionName}, Username: ${username}, Error: ${e}
         `;
         console.error(errorMsg);
         throw errorMsg;
@@ -42,7 +66,7 @@ async function getByUsername(db, username, includePassword=false) {
 async function register(db, username, password) {
 
     // check whether user exists
-    let existingUser = await getByUsername(username);
+    let existingUser = await getByUsername(db, username);
     if (existingUser !== null) {
         throw `Unable to register new user. Username ${username} already exists`;
     }
@@ -138,5 +162,5 @@ class LoginError extends Error {
 }
 
 module.exports = {
-    changePassword, getByUsername, register, remove, verify, LoginError
+    changePassword, getByUsername, getUsernameById, register, remove, verify, LoginError
 }

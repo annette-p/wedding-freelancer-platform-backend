@@ -4,6 +4,7 @@ const MongoUtil = require("./models/MongoUtil");
 const Freelancers = require("./models/Freelancers");
 const Logins = require("./models/Logins");
 const Reviews = require("./models/Reviews");
+const Survery = require("./models/Surveys")
 
 // read from .env file
 require('dotenv').config();
@@ -511,17 +512,54 @@ async function main() {
 
     // delete freelancer
     app.delete('/freelancer/:id', async(req,res) => {
+        let surveyData = {
+            "category": "account deletion",
+            "response": {
+                "reasonToLeave": req.body.reasonToLeave,
+            }
+        }
+        if (req.body.additionalInfo) {
+            surveyData.response.additionalInfo = req.body.additionalInfo
+        }
+
         try {
-            let results = await Freelancers.remove(db, req.params.id)
-            res.status(200);
-            res.send(results);
-            /*
-            sucessful response: 
-                {
-                    "acknowledged": true,
-                    "deletedCount": 1
+            let freelancer = await Freelancers.getById(db, req.params.id)
+            if (freelancer) {
+                let loginIdResult = await Logins.getUsernameById(db, (freelancer.login).toString())
+                if (loginIdResult) {
+                    let loginResult = await Logins.verify(db, loginIdResult.username, req.body.password);
+                    if (loginResult !== null) {
+                        let deleteFreelancerResult = await Freelancers.remove(db, req.params.id)
+                        let deleteReviewsResult = await Reviews.removeReviewForFreelancer(db, req.params.id)
+                        let addSurveyResult = await Survery.add(db, surveyData)
+
+                        if (deleteFreelancerResult.deletedCount === 1) {
+                            res.status(200);
+                            res.json({
+                                "success": true,
+                                "message": "Freelancer profile deleted successfully",
+                                "freelancerId": req.params.id
+                            });
+                            return;
+                            /*
+                            sucessful response: 
+                                {
+                                    "acknowledged": true,
+                                    "deletedCount": 1
+                                }
+                            */
+                        }
+                    }
                 }
-            */
+            }
+
+            res.status(400);
+            res.json({
+                "error": "Unable to delete freelancer profile",
+                "freelancerId": req.params.id
+            });
+            return;
+            
         } catch (e) {
             errorHandling(e, res);
         }
