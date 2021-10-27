@@ -63,17 +63,58 @@ async function main() {
             // we fill in the critera depending on whether specific
             // query string keys are provided
 
-            // if the `type` key exists in req.query
-            if (req.query.type) {
+            if (req.body.searchText) {
+                criteria['$or'] = []
+                req.body.searchText.split(" ").forEach( searchWord => {
+                    singleSearchCriteria = [
+                        {
+                          "name": {
+                            "$regex": searchWord,
+                            "$options": "i"
+                          }
+                        },
+                        {
+                          "bio": {
+                            "$regex": searchWord,
+                            "$options": "i"
+                          }
+                        },
+                        {
+                            "portfolios": {
+                              "$elemMatch": {
+                                "title": {
+                                  "$regex": searchWord,
+                                  "$options": "i"
+                                }
+                              }
+                            }
+                        },
+                        {
+                          "portfolios": {
+                            "$elemMatch": {
+                              "description": {
+                                "$regex": searchWord,
+                                "$options": "i"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    criteria['$or'] = criteria['$or'].concat(singleSearchCriteria)
+                } )
+                
+            }
+            
+            if (req.body.type) {
                 criteria['type'] = {
-                    'type': req.query.type,
+                    'type': req.body.type,
                     '$options': 'i'
                 }
             }
 
-            if (req.query.specialized) {
+            if (req.body.specialized) {
                 criteria['specialized'] = {
-                    '$in': [req.query.specialized]
+                    '$in': req.body.specialized
                 }
             }
 
@@ -512,6 +553,7 @@ async function main() {
 
     // delete freelancer
     app.delete('/freelancer/:id', async(req,res) => {
+        // prepare survey data to be added
         let surveyData = {
             "category": "account deletion",
             "response": {
@@ -523,16 +565,21 @@ async function main() {
         }
 
         try {
+            // get freelance whole object 
             let freelancer = await Freelancers.getById(db, req.params.id)
             if (freelancer) {
+                // to get the _id of the login in freelance collection
                 let loginIdResult = await Logins.getUsernameById(db, (freelancer.login).toString())
                 if (loginIdResult) {
+                    // found > varify the username (retrieved frm db) with password provided by user
                     let loginResult = await Logins.verify(db, loginIdResult.username, req.body.password);
                     if (loginResult !== null) {
+                        // authentication success > delete freelance, all related reivews, collect survey
                         let deleteFreelancerResult = await Freelancers.remove(db, req.params.id)
                         let deleteReviewsResult = await Reviews.removeReviewForFreelancer(db, req.params.id)
                         let addSurveyResult = await Survery.add(db, surveyData)
 
+                        // to confirm 1 record of freelancer was deleted
                         if (deleteFreelancerResult.deletedCount === 1) {
                             res.status(200);
                             res.json({
