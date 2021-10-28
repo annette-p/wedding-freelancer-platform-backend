@@ -64,8 +64,11 @@ async function main() {
             // query string keys are provided
 
             if (req.query.searchText) {
+                // '$or' >> is to match search criteria across multiple fields in db  
                 criteria['$or'] = []
+                // split the search text by spaces
                 req.query.searchText.split(" ").forEach( searchWord => {
+                    // ignore spaces, and handle search text
                     if (searchWord.trim().length > 0) {
                         singleSearchCriteria = [
                             {
@@ -178,10 +181,10 @@ async function main() {
                 return;
             }
 
-            if (req.body.specialized.length > 3) {
+            if (req.body.specialized.length > 6) {
                 res.status(400);
                 res.json({
-                    "error": "Only maximum 3 specializations permitted"
+                    "error": "Only maximum 6 specializations permitted"
                 });
                 return;
             }
@@ -377,10 +380,10 @@ async function main() {
             return;
         }
 
-        if (req.body.specialized.length > 3) {
+        if (req.body.specialized.length > 6) {
             res.status(400);
             res.json({
-                "error": "Only maximum 3 specializations permitted"
+                "error": "Only maximum 6 specializations permitted"
             });
             return;
         }
