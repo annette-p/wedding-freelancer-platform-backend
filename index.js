@@ -112,10 +112,7 @@ async function main() {
             }
             
             if (req.query.type) {
-                criteria['type'] = {
-                    'type': req.query.type,
-                    '$options': 'i'
-                }
+                criteria['type'] = req.query.type
             }
 
             if (req.query.specialized) {
