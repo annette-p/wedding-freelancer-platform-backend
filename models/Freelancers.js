@@ -9,13 +9,15 @@ const validFreelancerTypes = [
 ]
 
 const validSpecializations = [
-    "bridal makeup",
-    "fancy makeup",
-    "natural glow makeup",
+    "bridal-makeup",
+    "fancy-makeup",
+    "natural-glow-makeup",
     "pre-wedding",
     "photography",
     "videography",
-    "Wedding day /ROM"
+    "wedding-day-rom",
+    "maternity",
+    "newborn"
 ]
 
 // get all freelancers from DB
