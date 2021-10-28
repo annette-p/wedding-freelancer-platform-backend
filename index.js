@@ -63,58 +63,61 @@ async function main() {
             // we fill in the critera depending on whether specific
             // query string keys are provided
 
-            if (req.body.searchText) {
+            if (req.query.searchText) {
                 criteria['$or'] = []
-                req.body.searchText.split(" ").forEach( searchWord => {
-                    singleSearchCriteria = [
-                        {
-                          "name": {
-                            "$regex": searchWord,
-                            "$options": "i"
-                          }
-                        },
-                        {
-                          "bio": {
-                            "$regex": searchWord,
-                            "$options": "i"
-                          }
-                        },
-                        {
-                            "portfolios": {
-                              "$elemMatch": {
-                                "title": {
-                                  "$regex": searchWord,
-                                  "$options": "i"
-                                }
-                              }
-                            }
-                        },
-                        {
-                          "portfolios": {
-                            "$elemMatch": {
-                              "description": {
+                req.query.searchText.split(" ").forEach( searchWord => {
+                    if (searchWord.trim().length > 0) {
+                        singleSearchCriteria = [
+                            {
+                            "name": {
                                 "$regex": searchWord,
                                 "$options": "i"
-                              }
                             }
-                          }
-                        }
-                      ]
-                    criteria['$or'] = criteria['$or'].concat(singleSearchCriteria)
+                            },
+                            {
+                            "bio": {
+                                "$regex": searchWord,
+                                "$options": "i"
+                            }
+                            },
+                            {
+                                "portfolios": {
+                                "$elemMatch": {
+                                    "title": {
+                                    "$regex": searchWord,
+                                    "$options": "i"
+                                    }
+                                }
+                                }
+                            },
+                            {
+                            "portfolios": {
+                                "$elemMatch": {
+                                "description": {
+                                    "$regex": searchWord,
+                                    "$options": "i"
+                                }
+                                }
+                            }
+                            }
+                        ]
+                        criteria['$or'] = criteria['$or'].concat(singleSearchCriteria)
+                    }
+                    
                 } )
                 
             }
             
-            if (req.body.type) {
+            if (req.query.type) {
                 criteria['type'] = {
-                    'type': req.body.type,
+                    'type': req.query.type,
                     '$options': 'i'
                 }
             }
 
-            if (req.body.specialized) {
+            if (req.query.specialized) {
                 criteria['specialized'] = {
-                    '$in': req.body.specialized
+                    '$in': [req.query.specialized]
                 }
             }
 
