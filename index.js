@@ -121,6 +121,30 @@ async function main() {
                 }
             }
 
+            if (req.query.minHourlyRate || req.query.maxHourlyRate) {
+                let rateRange = {}
+                if (req.query.minHourlyRate) {
+                    rateRange['$gte'] = parseInt(req.query.minHourlyRate)
+                }
+                if (req.query.maxHourlyRate) {
+                    rateRange['$lte'] = parseInt(req.query.maxHourlyRate)
+                }
+                criteria['rate'] = rateRange
+                criteria['rateUnit'] = "hour"
+            }
+
+            if (req.query.minSessionRate || req.query.maxSessionRate) {
+                let rateRange = {}
+                if (req.query.minSessionRate) {
+                    rateRange['$gte'] = parseInt(req.query.minSessionRate)
+                }
+                if (req.query.maxSessionRate) {
+                    rateRange['$lte'] = parseInt(req.query.maxSessionRate)
+                }
+                criteria['rate'] = rateRange
+                criteria['rateUnit'] = "session"
+            }
+
             // ** END OF NOT IMPLEMENTED **
 
             let result = await Freelancers.get(db, criteria, projection);
