@@ -658,7 +658,7 @@ async function main() {
             return;
         }
 
-        if (req.body.reasonToLeave === "other" && (!req.body.additionalInfo || req.body.additionalInfo.trim().length() === 0)) {
+        if (req.body.reasonToLeave === "other" && (!req.body.additionalInfo || req.body.additionalInfo.trim().length === 0)) {
             res.status(400);
             res.json({
                 "error": "The user-defined reason for leaving is missing."
