@@ -5,6 +5,7 @@ const Freelancers = require("./models/Freelancers");
 const Logins = require("./models/Logins");
 const Reviews = require("./models/Reviews");
 const Survery = require("./models/Surveys")
+const Validations = require('./utils/Validations')
 
 // read from .env file
 require('dotenv').config();
@@ -240,6 +241,38 @@ async function main() {
                     "error": "Mandatory field (showCase) is missing."
                 });
                 return;
+            } else if (!Validations.validURL(req.body.showCase)) {
+                res.status(400);
+                res.json({
+                    "error": "Invalid url for showCase"
+                });
+                return;
+            }
+
+            if (req.body.profileImage && !Validations.validURL(req.body.profileImage)) {
+                res.status(400);
+                res.json({
+                    "error": "Invalid url for profile image"
+                });
+                return;
+            }
+
+            if (req.body.contact.website && !Validations.validURL(req.body.contact.website)) {
+                res.status(400);
+                res.json({
+                    "error": "Invalid url for freelancer's website"
+                });
+                return;
+            }
+
+            if ((req.body.socialMedia.facebook && !Validations.validURL(req.body.socialMedia.facebook)) || 
+                (req.body.socialMedia.instagram && !Validations.validURL(req.body.socialMedia.instagram)) ||
+                (req.body.socialMedia.tiktok && !Validations.validURL(req.body.socialMedia.tiktok))) {
+                res.status(400);
+                res.json({
+                    "error": "Invalid url for social media"
+                });
+                return;
             }
 
             /* ............. form processing .............  */
@@ -314,7 +347,7 @@ async function main() {
             req.body.portfolios.some( (portfolio) => {
                 if (portfolio.title && portfolio.title.trim().length > 0 && 
                     portfolio.description && portfolio.description.trim().length > 0 &&
-                    portfolio.url && portfolio.url.trim().length > 0) {
+                    portfolio.url && portfolio.url.trim().length > 0 && Validations.validURL(portfolio.url)) {
                     
                     newFreelancerData.portfolios.push(portfolio);
                     
@@ -439,6 +472,38 @@ async function main() {
                 "error": "Mandatory field (showCase) is missing."
             });
             return;
+        } else if (!Validations.validURL(req.body.showCase)) {
+            res.status(400);
+            res.json({
+                "error": "Invalid url for showCase"
+            });
+            return;
+        }
+
+        if (req.body.profileImage && !Validations.validURL(req.body.profileImage)) {
+            res.status(400);
+            res.json({
+                "error": "Invalid url for profile image"
+            });
+            return;
+        }
+
+        if (req.body.contact.website && !Validations.validURL(req.body.contact.website)) {
+            res.status(400);
+            res.json({
+                "error": "Invalid url for freelancer's website"
+            });
+            return;
+        }
+
+        if ((req.body.socialMedia.facebook && !Validations.validURL(req.body.socialMedia.facebook)) || 
+            (req.body.socialMedia.instagram && !Validations.validURL(req.body.socialMedia.instagram)) ||
+            (req.body.socialMedia.tiktok && !Validations.validURL(req.body.socialMedia.tiktok))) {
+            res.status(400);
+            res.json({
+                "error": "Invalid url for social media"
+            });
+            return;
         }
 
         /* ............. form processing .............  */
@@ -506,7 +571,7 @@ async function main() {
         req.body.portfolios.some( (portfolio) => {
             if (portfolio.title && portfolio.title.trim().length > 0 && 
                 portfolio.description && portfolio.description.trim().length > 0 &&
-                portfolio.url && portfolio.url.trim().length > 0) {
+                portfolio.url && portfolio.url.trim().length > 0 && Validations.validURL(portfolio.url)) {
                 
                     updatedFreelancerData.portfolios.push(portfolio);
                 
