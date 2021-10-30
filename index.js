@@ -580,6 +580,29 @@ async function main() {
 
     // delete freelancer
     app.delete('/freelancer/:id', async(req,res) => {
+
+        /* ............. validation .............  */
+
+        if (!req.body.reasonToLeave || req.body.reasonToLeave.trim().length === 0 || 
+            !req.body.password || req.body.password.trim().length === 0) {
+
+            res.status(400);
+            res.json({
+                "error": "One or more mandatory fields (Reason to Leave, Current Password) missing."
+            });
+            return;
+        }
+
+        if (req.body.reasonToLeave === "other" && (!req.body.additionalInfo || req.body.additionalInfo.trim().length() === 0)) {
+            res.status(400);
+            res.json({
+                "error": "The user-defined reason for leaving is missing."
+            });
+            return;
+        }
+
+        /* ............. form processing .............  */
+
         // prepare survey data to be added
         let surveyData = {
             "category": "account deletion",
