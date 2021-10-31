@@ -22,6 +22,44 @@ app.use(express.json());
 // enable CORS
 app.use(cors());
 
+// swagger
+swaggerJsdoc = require("swagger-jsdoc"),
+swaggerUi = require("swagger-ui-express");
+
+const options = {
+    definition: {
+      openapi: "3.0.0",
+      info: {
+        title: "Wedding Freelancer Platform API",
+        version: "0.1.0",
+        description:
+          "This is the Wedding Freelancer Platform API application developed with NodeJS Express and documented with Swagger",
+        license: {
+          name: "MIT",
+          url: "https://spdx.org/licenses/MIT.html",
+        },
+        contact: {
+          name: "Annette Poh",
+          url: "https://www.linkedin.com/in/annette-poh",
+          email: "a.annette.p@gmail.com",
+        },
+      },
+      servers: [
+        {
+          url: "https://annette-p-freelancer-platform.herokuapp.com",
+        },
+      ],
+    },
+    apis: ["./index.js", "./models/schema.js"],
+  };
+  
+const specs = swaggerJsdoc(options);
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(specs, { explorer: true })
+);
+
 // Ref: https://stackoverflow.com/a/51629852
 app.use(function (error, req, res, next) {
     // Handle SyntaxError
@@ -47,14 +85,71 @@ async function main() {
         console.error(err);
     }
 
+    app.get('/', async (req, res) => {
+        // Redirect to swagger docs
+        res.redirect('/api-docs');
+    })
+
     /* ........................................ Freelancer dataset collection ................................. */
 
     // retrieve list of freelancers
+    /**
+     * @swagger
+     * /freelancers:
+     *   get:
+     *     description: Retrieve list of freelancers
+     *     summary: Retrieve list of freelancers
+     *     parameters:
+     *     - in: query
+     *       name: searchText
+     *       description: search criteria for freelancers
+     *       schema:
+     *         type: string
+     *     - in: query
+     *       name: type
+     *       description: profession of freelancers
+     *       schema:
+     *         type: string
+     *         enum: ["makeup-artist", "photographer", "videographer"]
+     *     - in: query
+     *       name: specialized
+     *       description: specialization of freelancers
+     *       schema:
+     *         type: string
+     *         enum: ["bridal-makeup", "fancy-makeup", "natural-glow-makeup", "pre-wedding", "photography", "videography", "wedding-day-rom", "maternity", "newborn"]
+     *     - in: query
+     *       name: minHourlyRate
+     *       description: minimum hourly rate
+     *       schema:
+     *         type: integer
+     *     - in: query
+     *       name: maxHourlyRate
+     *       description: maximum hourly rate
+     *       schema:
+     *         type: integer
+     *     - in: query
+     *       name: minSessionRate
+     *       description: minimum rate per session
+     *       schema:
+     *         type: integer
+     *     - in: query
+     *       name: maxSessionRate
+     *       description: maximum rate per session
+     *       schema:
+     *         type: integer
+     *     responses:
+     *       200:
+     *         description: list of freelancers as an array
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#components/schemas/Freelancers'
+     *       500:
+     *         description: failed to retrieve freelancers due to unexpected errors
+     */
     app.get('/freelancers', async (req, res) => {
 
         try {
-
-            // ** NOT IMPLEMENTED YET - FUTURE SEARCH **
             // start with an empty critera object
             let criteria = {};
             let projection = { 
@@ -158,6 +253,28 @@ async function main() {
     })
 
     // get freelancer by id
+    /**
+     * @swagger
+     * /freelancer/{id}:
+     *   get:
+     *     description: Retrieve a freelancer by unique object id
+     *     summary: Retrieve a freelancer by unique object id
+     *     parameters:
+     *     - in: path
+     *       name: id
+     *       description: unique object id of freelancer
+     *       schema:
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: the freelancer as an object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#components/schemas/Freelancer'
+     *       500:
+     *         description: failed to retrieve freelancer due to unexpected errors
+     */
     app.get('/freelancer/:id', async(req,res)=>{
         try {
             let result = await Freelancers.getById(db, req.params.id)
@@ -169,6 +286,39 @@ async function main() {
     })
 
     // add freelancer
+    /**
+     * @swagger
+     * /freelancer:
+     *   post:
+     *     description: Create a new freelancer
+     *     summary: Create a new freelancer
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/requestBodies/NewFreelancer'
+     *     responses:
+     *       201:
+     *         description: The new freelancer has been created successfully
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: New freelancer profile added successfully
+     *                 freelancerId:
+     *                   type: string
+     *                   description: The auto-generated id of the new Freelancer
+     *                   example: 616661b1d29fa9bc58c8b97d
+     *       500:
+     *         description: failed to create new freelancer due to unexpected errors
+     */
     app.post('/freelancer', async (req, res) => {
         try {
 
@@ -401,6 +551,55 @@ async function main() {
     })
 
     // edit & update freelancer
+    /**
+     * @swagger
+     * /freelancer/{id}:
+     *   put:
+     *     description: Update an existing freelancer
+     *     summary: Update an existing freelancer
+     *     parameters:
+     *     - in: path
+     *       name: id
+     *       description: unique object id of freelancer
+     *       schema:
+     *         type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/requestBodies/EditFreelancer'
+     *     responses:
+     *       200:
+     *         description: The freelancer has been updated successfully
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: Freelancer profile updated
+     *                 freelancerId:
+     *                   type: string
+     *                   description: The auto-generated id of the Freelancer profile updated
+     *                   example: 616661b1d29fa9bc58c8b97d
+     *       400:
+     *         description: Unsuccessful update of Freelancer profile
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: The error message describing the issue encountered
+     *       500:
+     *         description: failed to update existing freelancer profile due to unexpected errors
+     */
     app.put('/freelancer/:id', async(req,res)=>{
 
         /* ............. validation .............  */
@@ -644,6 +843,55 @@ async function main() {
     })
 
     // delete freelancer
+    /**
+     * @swagger
+     * /freelancer/{id}:
+     *   delete:
+     *     description: Delete an existing freelancer
+     *     summary: Delete an existing freelancer
+     *     parameters:
+     *     - in: path
+     *       name: id
+     *       description: unique object id of freelancer
+     *       schema:
+     *         type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/requestBodies/DeleteFreelancer'
+     *     responses:
+     *       200:
+     *         description: The new freelancer has been created successfully
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: Freelancer profile deleted successfully
+     *                 freelancerId:
+     *                   type: string
+     *                   description: The auto-generated id of the Freelancer being deleted
+     *                   example: 616661b1d29fa9bc58c8b97d
+     *       400:
+     *         description: Unsuccessful deletion of Freelancer profile
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: The error message describing the issue encountered
+     *       500:
+     *         description: failed to create new freelancer due to unexpected errors
+     */
     app.delete('/freelancer/:id', async(req,res) => {
 
         /* ............. validation .............  */
@@ -731,6 +979,28 @@ async function main() {
     /* ........................................ Review dataset collection ................................... */
 
     // get all reviews for a freelancer by freelancer ID
+    /**
+     * @swagger
+     * /freelancer/{id}/reviews:
+     *   get:
+     *     description: Retrieve all reviews for a freelancer
+     *     summary: Retrieve all reviews for a freelancer
+     *     parameters:
+     *     - in: path
+     *       name: id
+     *       description: unique object id of freelancer
+     *       schema:
+     *         type: string
+     *     responses:
+     *       200:
+     *         description: The reviews for the freelancer as an array
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#components/schemas/Reviews'
+     *       500:
+     *         description: failed to retrieve reviews due to unexpected errors
+     */
     app.get('/freelancer/:id/reviews', async (req, res) => {
         try {
             let result = await Reviews.getByFreelancerId(db, req.params.id)
@@ -742,6 +1012,51 @@ async function main() {
     })
 
     // create new review for a freelancer from each respective freelancer profile
+    /**
+     * @swagger
+     * /freelancer/{id}/review:
+     *   post:
+     *     description: Create a new review for freelancer
+     *     summary: Create a new review for freelancer
+     *     parameters:
+     *     - in: path
+     *       name: id
+     *       description: unique object id of freelancer
+     *       schema:
+     *         type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/requestBodies/NewReview'
+     *     responses:
+     *       201:
+     *         description: The new review for the freelancer has been created successfully
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: New review added successfully
+     *       400:
+     *         description: Unsuccessful add of new review for freelancer
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: The error message describing the issue encountered
+     *       500:
+     *         description: failed to create new review for the freelancer due to unexpected errors
+     */
     app.post('/freelancer/:id/review', async (req, res) => {
         /*
             structure of a review:
@@ -861,6 +1176,60 @@ async function main() {
     /* ........................................ Login dataset collection ................................... */
 
     // new login registration
+    /**
+     * @swagger
+     * /login:
+     *   post:
+     *     description: Login as registered freelancer
+     *     summary: Login as registered freelancer
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/requestBodies/Login'
+     *     responses:
+     *       200:
+     *         description: The new review for the freelancer has been created successfully
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: true
+     *                 freelancer:
+     *                   type: object
+     *                   description: The details of authenticated freelancer
+     *                   properties:
+     *                     schema:
+     *                       allOf:
+     *                         - $ref: '#components/schemas/Freelancer'
+     *       400:
+     *         description: Unsuccessful login due to invalid input
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: The error message describing the issue encountered
+     *       401:
+     *         description: Unsuccessful login due to invalid username/password
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: The error message describing the issue encountered
+     *                   example: Login failed
+     *       500:
+     *         description: failed to create new review for the freelancer due to unexpected errors
+     */
     app.post('/login', async (req, res) => {
         try {
             const username = req.body.username;
@@ -916,6 +1285,55 @@ async function main() {
     })
 
     // change password
+    /**
+     * @swagger
+     * /change-password:
+     *   put:
+     *     description: Change password of freelancer
+     *     summary: Change password of freelancer
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/requestBodies/ChangePassword'
+     *     responses:
+     *       200:
+     *         description: The freelancer has been updated successfully
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                   example: true
+     *                 message:
+     *                   type: string
+     *                   example: Password changed successfully
+     *       400:
+     *         description: Unsuccessful password update for Freelancer profile
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: The error message describing the issue encountered
+     *       401:
+     *         description: Unsuccessful password update due to invalid username/password
+     *         content: 
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   description: The error message describing the issue encountered
+     *       500:
+     *         description: failed to update password for freelancer profile due to unexpected errors
+     */
     app.put('/change-password', async (req, res) => {
         let username = req.body.username;
         let currentPassword = req.body.currentPassword;
